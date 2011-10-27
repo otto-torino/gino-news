@@ -1,0 +1,55 @@
+@charset "utf-8";
+
+section#news {
+
+}
+
+section#news h1 {
+
+}
+
+section#news article {
+
+}
+
+section#news article h2 {
+
+}
+
+section#news article .newsTitle {
+	color:#000;
+	font-weight:bold;
+	text-decoration:underline;
+}
+section#news article .newsTitle:hover {
+	text-decoration:none;
+}
+
+/* date and categories in public list*/
+section#news article .newsCtg {
+	font-size:11px;
+	font-weight:normal;
+	font-style:italic;
+}
+
+section#news article .newsDate {
+	font-size:9px;
+	font-style:italic;
+}
+
+section#news article .newsSeparator {
+	margin: 10px 0;
+	border-top:1px dotted #666;
+}
+
+section#news footer {
+	text-align:right;
+}
+
+section#news article p {
+	color:#666;
+	margin-top:5px;
+}
+section#view_news {
+
+}

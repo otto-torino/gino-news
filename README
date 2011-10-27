@@ -1,0 +1,39 @@
+===================================================================
+news library for gino CMS by Otto Srl, MIT license
+===================================================================
+Libreria per la gestione di news categorizzate e non.
+
+**CARATTERISTICHE**
+- titolo
+- categoria (opzionale)
+- data
+- testo
+- immagine (ridimensionamento e creazione thumb automatizzati)
+- file allegato
+- condivisione social networks
+- visualizzazione ristretta a gruppi di utenti di sistema
+- gestione della pubblicazione e di un gruppo di utenti redattori
+
+**OPZIONI CONFIGURABILI**
+- titolo ultime news
+- titolo elenco news
+- visualizzazione categorie
+- numero di news visualizzate
+- numero di caratteri mostrati nei riassunti
+- modalità di visualizzazione della news completa (layer, expand, nuova pagina)
+- dimensioni layer (vedi opzione precedente)
+- effetto lightbox sull'immagine
+- modulo di ricerca visibile
+- larghezza delle immagini a seguito di ridimensionamento e creazione thumb
+- feed RSS
+
+**OUTPUTS**
+- lista ultime news (numero configurabile da opzioni)
+- lista completa news paginata
+
+**INSTALLAZIONE**
+Per installare questa libreria seguire la seguente procedura:
+- creare un pacchetto zip di nome "news_pkg.zip" con tutti i file eccetto il README
+- loggarsi nell'area amministrativa e entrare nella sezione "moduli di sistema"
+- seguire il link (+) "installa nuovo modulo" e caricare il pacchetto creato al punto 1
+- creare nuove istanze del modulo nella sezione "moduli" dell'area amministrativa.
