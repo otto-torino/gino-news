@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<docblox>
+  <title>gino-news</title>
+  <parser>
+    <default-package-name>gino-news</default-package-name>
+    <target>doc</target>
+  </parser>
+  <transformer>
+    <target>doc</target>
+  </transformer>
+  <files>
+    <directory>.</directory>
+    <ignore>doc/*</ignore>
+  </files>
+  <transformations>
+    <template name="default" />
+  </transformations>
+</docblox>
+
+
