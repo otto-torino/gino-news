@@ -1,9 +1,12 @@
+news 1.0 library for gino CMS by Otto Srl, MIT license
 ===================================================================
-news library for gino CMS by Otto Srl, MIT license
-===================================================================
-Libreria per la gestione di news categorizzate e non.
+Libreria per la gestione di news categorizzate e non.   
+La documentazione per lo sviluppatore della versione 1.0 (generata con doxygen) è contenuta all'interno della directory doc.   
+La documentazione dell'ultima versione disponibile la si trova qui:    
+http://otto-torino.github.com/gino-news
 
-**CARATTERISTICHE**
+CARATTERISTICHE
+------------------------------
 - titolo
 - categoria (opzionale)
 - data
@@ -14,7 +17,8 @@ Libreria per la gestione di news categorizzate e non.
 - visualizzazione ristretta a gruppi di utenti di sistema
 - gestione della pubblicazione e di un gruppo di utenti redattori
 
-**OPZIONI CONFIGURABILI**
+OPZIONI CONFIGURABILI
+------------------------------
 - titolo ultime news
 - titolo elenco news
 - visualizzazione categorie
@@ -27,13 +31,15 @@ Libreria per la gestione di news categorizzate e non.
 - larghezza delle immagini a seguito di ridimensionamento e creazione thumb
 - feed RSS
 
-**OUTPUTS**
+OUTPUTS
+------------------------------
 - lista ultime news (numero configurabile da opzioni)
 - lista completa news paginata
 
-**INSTALLAZIONE**
+INSTALLAZIONE
+------------------------------
 Per installare questa libreria seguire la seguente procedura:
-- creare un pacchetto zip di nome "news_pkg.zip" con tutti i file eccetto il README
+- creare un pacchetto zip di nome "news_pkg.zip" con tutti i file eccetto README.md, docblox.dist.xml ed il contenuto della directory doc
 - loggarsi nell'area amministrativa e entrare nella sezione "moduli di sistema"
 - seguire il link (+) "installa nuovo modulo" e caricare il pacchetto creato al punto 1
 - creare nuove istanze del modulo nella sezione "moduli" dell'area amministrativa.
