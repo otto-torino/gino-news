@@ -1,7 +1,7 @@
-news library for gino CMS by Otto Srl, MIT license
+news 1.0 library for gino CMS by Otto Srl, MIT license
 ===================================================================
 Libreria per la gestione di news categorizzate e non.   
-La documentazione per lo sviluppatore della versione x.x (generata con doxygen) è contenuta all'interno della directory doc.   
+La documentazione per lo sviluppatore della versione 1.0 (generata con doxygen) è contenuta all'interno della directory doc.   
 La documentazione dell'ultima versione disponibile la si trova qui:    
 http://otto-torino.github.com/gino-news
 
