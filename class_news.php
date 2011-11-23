@@ -1,60 +1,94 @@
 <?php
 /**
-* Gino News
-*
-* Modulo per la gestione e presentazione di news. Viene gestito un flusso che comprende
-* la redazione dei contenuti e la loro pubblicazione. Esistono dei gruppi di utenti che 
-* possono accedere alle varie funzionalità.
-*
-* @package gino-news
-* @version 1.0
-* @copyright 2005 Otto srl
-* @author Marco Guidotti <guidottim@gmail.com>, abidibo <abidibo@gmail.com>
-* @license http://www.opensource.org/licenses/mit-license.php MIT license
-*/
+ * \file class_news.php
+ * Contiene la definizione ed implementazione della classe news.
+ * 
+ * @version 1.0
+ * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @authors Marco Guidotti guidottim@gmail.com
+ * @authors abidibo abidibo@gmail.com
+ */
 
 /**
- * La classe category è inclusa in Gino base 
+ * \mainpage Caratteristiche, opzioni configurabili da backoffice ed output disponibili per i template e le voci di menu.
+ *
+ * CARATTERISTICHE
+ * - titolo
+ * - categoria (opzionale)
+ * - data
+ * - testo
+ * - immagine (ridimensionamento e creazione thumb automatizzati)
+ * - file allegato
+ * - condivisione social networks
+ * - visualizzazione ristretta a gruppi di utenti di sistema
+ * - gestione della pubblicazione e di un gruppo di utenti redattori
+ * 
+ * OPZIONI CONFIGURABILI
+ * - titolo ultime news
+ * - titolo elenco news
+ * - visualizzazione categorie
+ * - numero di news visualizzate
+ * - numero di caratteri mostrati nei riassunti
+ * - modalità di visualizzazione della news completa (layer, expand, nuova pagina)
+ * - dimensioni layer (vedi opzione precedente)
+ * - effetto lightbox sull'immagine
+ * - modulo di ricerca visibile
+ * - larghezza delle immagini a seguito di ridimensionamento e creazione thumb
+ * - feed RSS
+ *
+ * OUTPUTS
+ * - lista ultime news (numero configurabile da opzioni)
+ * - lista completa news paginata
+ *
  */
+
+/**
+ * @defgroup news
+ * Modulo per la gestione di news categorizzate pubbliche o private
+ *
+ * Il modulo contiene anche dei css, javascript e file di configurazione.
+ * 
+ */
+
+
 require_once(CLASSES_DIR.OS."class.category.php");
 
 /**
- * Classe per la gestione di news categorizzate
+ * \ingroup news
+ * Classe per la gestione di news categorizzate.
  *
  * Campi:
  *
- * * ctg: categoria
- * * title: titolo della news
- * * text: testo della news
- * * img: campo file immagine, con generazione automatica di thumb personalizzabile da opzioni
- * * filename: campo file allegato
- * * date: data di pubblicazione
- * * private: accesso alla news ristretto agli appartenenti al gruppo "iscritti"
- * * social: attivazione condivisione social networks
- * * published: pubblicazione della news
+ * - ctg: categoria
+ * - title: titolo della news
+ * - text: testo della news
+ * - img: campo file immagine, con generazione automatica di thumb personalizzabile da opzioni
+ * - filename: campo file allegato
+ * - date: data di pubblicazione
+ * - private: accesso alla news ristretto agli appartenenti al gruppo "iscritti"
+ * - social: attivazione condivisione social networks
+ * - published: pubblicazione della news
  *
  * Il modulo comprende una vasta serie di opzioni per controllare al meglio la parte pubblica.
  *
  * Gli output disponibili sono:
  *
- * * ultime n news (n da opzioni)
- * * elenco news paginate
- * * vista singola news
+ * - ultime n news (n da opzioni)
+ * - elenco news paginate
+ * - vista singola news
  * 
- * @uses AbstractEvtClass
- * @package gino-news 
  * @version 1.0
- * @copyright 2005 Otto srl
- * @author Marco Guidotti <guidottim@gmail.com>, abidibo <abidibo@gmail.com> 
- * @license http://www.opensource.org/licenses/mit-license.php MIT license
+ * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @authors Marco Guidotti guidottim@gmail.com
+ * @authors abidibo abidibo@gmail.com
  */
 class news extends AbstractEvtClass{
 
 	/**
 	 * Percorso assoluto alla cartella di upload di immagini ed allegati 
-	 * 
+	 *
 	 * @var string 
-	 * @access protected
+	 * @access protected 
 	 */
 	protected $_data_dir;
 
@@ -72,7 +106,7 @@ class news extends AbstractEvtClass{
 	 * @var array[string]mixed 
 	 * @access private
 	 */
-	private $_optionsValue = array();
+	private $_optionsValue;
 
 	/**
 	 * Opzione titolo della vista "ultime news" 
@@ -96,7 +130,7 @@ class news extends AbstractEvtClass{
  	 * @var int 
  	 * @access private
  	 */
- 	private $_view_ctg = 0;
+ 	private $_view_ctg;
 	
 	/**
 	 * Opzione numero di news per pagina nella vista "elenco news" 
@@ -104,7 +138,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_news_for_page = 10;
+	private $_news_for_page;
 
 	/**
 	 * Opzione numero di news mostrate nella vista "ultime news" 
@@ -112,7 +146,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_news_homepage = 4;
+	private $_news_homepage;
 	
 	/**
 	 * Opzione numero di caratteri mostrati per news nella vista "ultime news" 
@@ -120,7 +154,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_news_char = 60;
+	private $_news_char;
 
 	/**
 	 * Opzione modalità di apertura news completa (1: layer, 2: espansione, 3: nuova pagina) 
@@ -128,23 +162,23 @@ class news extends AbstractEvtClass{
 	 * @var int  
 	 * @access private
 	 */
-	private $_win_layer = 2;
+	private $_win_layer;
 
 	/**
-	 * Opzione larghezza layer 
+	 * Opzione larghezza layer (px)
 	 * 
 	 * @var int 
 	 * @access private
 	 */
-	private $_win_width = 300;
+	private $_win_width;
 
 	/**
-	 * Opzione altezza layer 
+	 * Opzione altezza layer (px)
 	 * 
 	 * @var int 
 	 * @access private
 	 */
-	private $_win_height = 150;
+	private $_win_height;
 	
 	/**
 	 * Opzione abilitazione effetto lightbox sulle thumb (bool 0 | 1) 
@@ -152,7 +186,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_news_img_lightbox = 0;
+	private $_news_img_lightbox;
 
 	/**
 	 * Opzione visualizza news completa al click sull'immagine thumb (bool 0 | 1). Se attiva disabilita l'opzione lightbox 
@@ -160,7 +194,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_img_expand = 0;	
+	private $_img_expand;	
 	
 	/**
 	 * Opzione visualizzazione form di ricerca in "elenco news" 
@@ -168,7 +202,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_search_form = 0;
+	private $_search_form;
 	
 	/**
 	 * Opzione larghezza usata per il ridimensionamnto delle immagini (px) 
@@ -176,7 +210,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_width_img = 600;
+	private $_width_img;
 
 	/**
 	 * Opzione larghezza usata per la generazione delle thumb (px) 
@@ -184,7 +218,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_width_thumb = 80;
+	private $_width_thumb;
 
 	/**
 	 * Opzione visualizzazione link feed rss 
@@ -192,7 +226,7 @@ class news extends AbstractEvtClass{
 	 * @var int 
 	 * @access private
 	 */
-	private $_feed_rss = 0;
+	private $_feed_rss;
 	
 	/**
 	 * Oggetto di tipo options per la gestione automatica delle opzioni 
@@ -203,36 +237,36 @@ class news extends AbstractEvtClass{
 	private $_options;
 
 	/**
-	 * Elenco di proprietà delle opzioni per la creazione del form 
+	 * Elenco di proprietà delle opzioni per la creazione del form delle opzioni 
 	 * 
 	 * @var array[string]mixed 
 	 * @access public
 	 */
-	public $_optionsLabels = array();
+	public $_optionsLabels;
 	
 	/**
 	 * Contiene gli id dei gruppi abilitati alla pubblicazione delle news 
 	 * 
-	 * @var array[int] 
+	 * @var array 
 	 * @access private
 	 */
-	private $_group_1 = array();
+	private $_group_1;
 
 	/**
 	 * Contiene gli id dei gruppi abilitati alla redazione delle news 
 	 * 
-	 * @var array[int] 
+	 * @var array 
 	 * @access private
 	 */
-	private $_group_2 = array();
+	private $_group_2;
 
 	/**
 	 * Contiene gli id dei gruppi abilitati alla visualizzazione delle news private 
 	 * 
-	 * @var array[int] 
+	 * @var array 
 	 * @access private
 	 */
-	private $_group_3 = array();
+	private $_group_3;
 	
 	/**
 	 * Settaggio della toolbar dell'editor CKEditor, possibili valori: 'Basic' | 'Full' 
@@ -304,7 +338,7 @@ class news extends AbstractEvtClass{
 	 * @var array 
 	 * @access private
 	 */
-	private $_extension_media = array('jpg', 'png');
+	private $_extension_media;
 
 	/**
 	 * Lista delle estensioni permesse per l'upload di allegati 
@@ -312,7 +346,7 @@ class news extends AbstractEvtClass{
 	 * @var array 
 	 * @access private
 	 */
-	private $_extension_attach = array('pdf', 'txt', 'rtf', 'doc');
+	private $_extension_attach;
 	
 	/**
 	 * Prefisso delle immagini uploadate 
@@ -403,26 +437,31 @@ class news extends AbstractEvtClass{
 
 		$this->_options = new options($this->_className, $this->_instance);
 		$this->_optionsLabels = array(
-		"title_last"=>array('label'=>_("Titolo ultime news"), 'value'=>$this->_optionsValue['title_last'], 'required'=>false),
-		"title_page"=>array('label'=>_("Titolo news paginate"), 'value'=>$this->_optionsValue['title_page'], 'required'=>false),
-		"view_ctg"=>array('label'=>_("Visualizza categorie (pagina)")),
-		"home_news"=>array('label'=>_("Numero news mostrate in 'ultime news'"), 'value'=>$this->_optionsValue['home_news']),
-		"page_news"=>array('label'=>_("Numero news per pagina"), 'value'=>$this->_optionsValue['page_news']),
-		"summary_char"=>array('label'=>_("Numero caratteri riassunto"), 'value'=>$this->_optionsValue['summary_char']),
-		"layer"=>array('label'=>array(_("Visualizzazione news completa"), _("'1': apertura in layer (no social)<br/>'2': apertura nella pagina stessa<br />'3': apertura in nuova pagina"))),
-		"layer_width"=>array('label'=>array(_("Larghezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente")), 'value'=>$this->_optionsValue['layer_width']),
-		"layer_height"=>array('label'=>array(_("Altezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente. Se il campo viene lasciato vuoto o nullo l'altezza verrà settata automaticamente dal sistema a seconsa del contenuto")), 'value'=>$this->_optionsValue['layer_height']),
-		"img_lightbox"=>array('label'=>_("Effetto lightbox sulla thumb")),
-		"img_expand"=>array('label'=>array(_("Effetto espansione news sulla thumb"), _("se attivo disabilita l'opzione precedente"))),
-		"news_search"=>array('label'=>_("Ricerca news")),
-		"width_img"=>array('label'=>_("Larghezza max immagini (px)"), 'value'=>$this->_optionsValue['width_img']),
-		"width_thumb"=>array('label'=>_("Larghezza max thumbs delle immagini (px)"), 'value'=>$this->_optionsValue['width_thumb']),
-		"feed_rss"=>array('label'=>_("Attiva feed RSS"))
+			"title_last"=>array('label'=>_("Titolo ultime news"), 'value'=>$this->_optionsValue['title_last'], 'required'=>false),
+			"title_page"=>array('label'=>_("Titolo news paginate"), 'value'=>$this->_optionsValue['title_page'], 'required'=>false),
+			"view_ctg"=>array('label'=>_("Visualizza categorie (pagina)")),
+			"home_news"=>array('label'=>_("Numero news mostrate in 'ultime news'"), 'value'=>$this->_optionsValue['home_news']),
+			"page_news"=>array('label'=>_("Numero news per pagina"), 'value'=>$this->_optionsValue['page_news']),
+			"summary_char"=>array('label'=>_("Numero caratteri riassunto"), 'value'=>$this->_optionsValue['summary_char']),
+			"layer"=>array('label'=>array(_("Visualizzazione news completa"), _("'1': apertura in layer (no social)<br/>'2': apertura nella pagina stessa<br />'3': apertura in nuova pagina"))),
+			"layer_width"=>array('label'=>array(_("Larghezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente")), 'value'=>$this->_optionsValue['layer_width']),
+			"layer_height"=>array('label'=>array(_("Altezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente. Se il campo viene lasciato vuoto o nullo l'altezza verrà settata automaticamente dal sistema a seconsa del contenuto")), 'value'=>$this->_optionsValue['layer_height']),
+			"img_lightbox"=>array('label'=>_("Effetto lightbox sulla thumb")),
+			"img_expand"=>array('label'=>array(_("Effetto espansione news sulla thumb"), _("se attivo disabilita l'opzione precedente"))),
+			"news_search"=>array('label'=>_("Ricerca news")),
+			"width_img"=>array('label'=>_("Larghezza max immagini (px)"), 'value'=>$this->_optionsValue['width_img']),
+			"width_thumb"=>array('label'=>_("Larghezza max thumbs delle immagini (px)"), 'value'=>$this->_optionsValue['width_thumb']),
+			"feed_rss"=>array('label'=>_("Attiva feed RSS"))
 		);
 
 		if(!pub::enabledPng()) {
-			$this->_extension_media = array_diff($this->_extension_media, array('png'));
+			$this->_extension_media = array('jpg');
 		}
+		else {
+			$this->_extension_media = array('png', 'jpg');
+		}
+
+		$this->_extension_attach = array('pdf', 'txt', 'rtf', 'doc');
 
 		$this->_action = cleanVar($_REQUEST, 'action', 'string', '');
 		$this->_block = cleanVar($_REQUEST, 'block', 'string', '');
@@ -431,10 +470,11 @@ class news extends AbstractEvtClass{
 	/**
 	 * Restituisce alcune proprietà della classe utili per la generazione di nuove istanze 
 	 * 
+	 * @static
 	 * @access public
 	 * @return array[string]array lista proprietà utilizzate per la creazione di istanze di tipo news
 	 */
-	public function getClassElements() {
+	public static function getClassElements() {
 
 		return array("tables"=>array('news', 'news_ctg', 'news_opt', 'news_grp', 'news_usr'),
 			     "css"=>array('news.css'),
@@ -753,7 +793,7 @@ class news extends AbstractEvtClass{
 		$filename = htmlChars($data['filename']);
 		$date = $this->shortDate($data['date']);
 		if($this->_win_layer==1)
-			$onclick_exp = "onclick=\"if(!window.myWin$id || !window.myWin$id.showing) {window.myWin$id = new layerWindow({'title':'"._("Dettagli")."', 'url':'$this->_home?pt[$this->_instanceName-view]&id=$id&layer=1', 'bodyId':'news_$id', 'width':$this->_win_width, 'height':".($this->_win_height ? $this->_win_height : 'null').", 'destroyOnClose':true, 'closeButtonUrl':'img/ico_close2.gif', 'disableObjects':true});window.myWin$id.display();}\"";
+			$onclick_exp = "onclick=\"if(!window.myWin$id || !window.myWin$id.showing) {window.myWin$id = new layerWindow({'title':'"._("Dettagli")."', 'url':'$this->_home?pt[$this->_instanceName-view]&id=$id&layer=1', 'bodyId':'news_$id', 'width':$this->_win_width, 'height':".($this->_win_height ? $this->_win_height : 'null').", 'destroyOnClose':true, 'closeButtonUrl':'img/ico_close2.gif', 'disableObjects':true, reloadZindex:true});window.myWin$id.display();}\"";
 		elseif($this->_win_layer==2)
 			$onclick_exp = "onclick=\"if(\$chk(window.news$id) && window.news$id==1) {\$('n$id').set('html', $('cutNews$id').get('html'));window.news$id=0;}else{\$('n$id').set('html', $('fullNews$id').get('html'));window.news$id = 1;}\"";
 		else 
@@ -1278,7 +1318,7 @@ class news extends AbstractEvtClass{
 				$link_modify = "<a href=\"index.php?evt[".$this->_instanceName."-manageDoc]&amp;id=$id&amp;start=$start&amp;order=$order&amp;action=".$this->_act_modify.($filterCtg?"&amp;filterCtg=$filterCtg":"")."\">".$this->icon('modify', '')."</a>";
 				$link_delete = "<span class=\"link\" onclick=\"if(confirmSubmit('"._("Sicuro di voler procedere con l\'eliminazione")."')) location.href='$this->_home?evt[".$this->_instanceName."-actionDelNews]&amp;id=$id&amp;start=$start&amp;order=$order".($filterCtg?"&amp;filterCtg=$filterCtg":"")."'\">".$this->icon('delete', '')."</span>";
 				$url = $this->_home."?pt[$this->_instanceName-manageDoc]&id=$id&action=view";
-				$link_view = "<span class=\"link\" onclick=\"window.myWin = new layerWindow({'title':'"._("Preview news")."', 'url':'$url', 'bodyId':'prew_news$id', 'width':400});window.myWin.display();\">".$this->icon('view', '')."</span>";
+				$link_view = "<span class=\"link\" onclick=\"window.myWin = new layerWindow({'title':'"._("Preview news")."', 'url':'$url', 'bodyId':'prew_news$id', 'width':400, reloadZindex:true});window.myWin.display();\">".$this->icon('view', '')."</span>";
 
 				if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1)) $links = array($link_modify, $link_delete, $link_view);
 				else $links = array($link_modify, $link_view);
