@@ -3,7 +3,7 @@
  * \file class_news.php
  * Contiene la definizione ed implementazione della classe news.
  * 
- * @version 1.0
+ * @version 1.1
  * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
@@ -26,6 +26,7 @@
  * OPZIONI CONFIGURABILI
  * - titolo ultime news
  * - titolo elenco news
+ * - titolo vetrina
  * - visualizzazione categorie
  * - numero di news visualizzate
  * - numero di caratteri mostrati nei riassunti
@@ -39,6 +40,7 @@
  * OUTPUTS
  * - lista ultime news (numero configurabile da opzioni)
  * - lista completa news paginata
+ * - vetrina news
  *
  */
 
@@ -77,7 +79,7 @@ require_once(CLASSES_DIR.OS."class.category.php");
  * - elenco news paginate
  * - vista singola news
  * 
- * @version 1.0
+ * @version 1.1
  * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
@@ -124,6 +126,14 @@ class news extends AbstractEvtClass{
 	 */
 	private $_title_page;
 
+	/**
+	 * Opzione titolo della vista "vetrina" 
+	 * 
+	 * @var string 
+	 * @access private
+	 */
+	private $_title_showcase;
+
  	/**
  	 * Opzione visualizzazione categorie (bool 0 | 1 ) 
  	 * 
@@ -148,6 +158,14 @@ class news extends AbstractEvtClass{
 	 */
 	private $_news_homepage;
 	
+	/**
+	 * Opzione numero di news mostrate nella vista "vetrina" 
+	 * 
+	 * @var int 
+	 * @access private
+	 */
+	private $_news_showcase;
+
 	/**
 	 * Opzione numero di caratteri mostrati per news nella vista "ultime news" 
 	 * 
@@ -409,8 +427,10 @@ class news extends AbstractEvtClass{
 		$this->_optionsValue = array(
 			'title_last'=>_("News"), 
 			'title_page'=>_("News"), 
+			'title_showcase'=>_("News"), 
 			'home_news'=>4, 
 			'page_news'=>10, 
+			'showcase_news'=>4, 
 			'summary_char'=>60, 
 			'layer'=>2, 
 			'layer_width'=>300, 
@@ -421,9 +441,11 @@ class news extends AbstractEvtClass{
 
 		$this->_title_last = htmlChars($this->setOption('title_last', array('value'=>$this->_optionsValue['title_last'], 'translation'=>true)));
 		$this->_title_page = htmlChars($this->setOption('title_page', array('value'=>$this->_optionsValue['title_page'], 'translation'=>true)));
+		$this->_title_showcase = htmlChars($this->setOption('title_showcase', array('value'=>$this->_optionsValue['title_showcase'], 'translation'=>true)));
 		$this->_view_ctg = $this->setOption('view_ctg');
 		$this->setNewsHomePage($this->setOption('home_news', array('value'=>$this->_optionsValue['home_news'])));
 		$this->setNewsForPage($this->setOption('page_news', array('value'=>$this->_optionsValue['page_news'])));
+		$this->_news_showcase = $this->setOption('showcase_news', array('value'=>$this->_optionsValue['showcase_news']));
 		$this->_news_char = $this->setOption('summary_char', array('value'=>$this->_optionsValue['summary_char']));
 		$this->_win_layer = $this->setOption('layer', array('value'=>$this->_optionsValue['layer']));
 		$this->_win_width = $this->setOption('layer_width', array('value'=>$this->_optionsValue['layer_width']));
@@ -439,9 +461,11 @@ class news extends AbstractEvtClass{
 		$this->_optionsLabels = array(
 			"title_last"=>array('label'=>_("Titolo ultime news"), 'value'=>$this->_optionsValue['title_last'], 'required'=>false),
 			"title_page"=>array('label'=>_("Titolo news paginate"), 'value'=>$this->_optionsValue['title_page'], 'required'=>false),
+			"title_showcase"=>array('label'=>_("Titolo vetrina"), 'value'=>$this->_optionsValue['title_showcase'], 'required'=>false),
 			"view_ctg"=>array('label'=>_("Visualizza categorie (pagina)")),
 			"home_news"=>array('label'=>_("Numero news mostrate in 'ultime news'"), 'value'=>$this->_optionsValue['home_news']),
 			"page_news"=>array('label'=>_("Numero news per pagina"), 'value'=>$this->_optionsValue['page_news']),
+			"showcase_news"=>array('label'=>_("Numero news vetrina"), 'value'=>$this->_optionsValue['showcase_news']),
 			"summary_char"=>array('label'=>_("Numero caratteri riassunto"), 'value'=>$this->_optionsValue['summary_char']),
 			"layer"=>array('label'=>array(_("Visualizzazione news completa"), _("'1': apertura in layer (no social)<br/>'2': apertura nella pagina stessa<br />'3': apertura in nuova pagina"))),
 			"layer_width"=>array('label'=>array(_("Larghezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente")), 'value'=>$this->_optionsValue['layer_width']),
@@ -617,7 +641,8 @@ class news extends AbstractEvtClass{
 
 		$list = array(
 			"blockList" => array("label"=>_("Lista utime news"), "role"=>'1'),
-			"viewList" => array("label"=>_("Lista news paginata"), "role"=>'1')
+			"viewList" => array("label"=>_("Lista news paginata"), "role"=>'1'),
+			"showcase" => array("label"=>_("Vetrina"), "role"=>'1')
 		);
 
 		return $list;
@@ -1099,6 +1124,62 @@ class news extends AbstractEvtClass{
 		return $GINO;
 	}
 	
+	/**
+	 * Vetrina ultime news solo testuale, con 'pallini' per selezionare la news da mostrare 
+	 * 
+	 * @access public
+	 * @return string
+	 */
+	public function showcase() {
+		
+		$this->accessType($this->_access_base);
+
+		$htmlsection = new htmlSection(array('id'=>"showcase_news_".$this->_instanceName,'class'=>'public', 'headerTag'=>'header', 'headerLabel'=>$this->_title_showcase));
+
+		$buffer = $this->scriptAsset("news_".$this->_instanceName.".css", "newsCSS".$this->_instance, 'css');
+		$buffer .= $this->scriptAsset("news.js", "newsJS".$this->_instance, 'js');
+
+		$limit = $this->_db->limit($this->_news_showcase, 0);
+		$query = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
+			? "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' ORDER BY date DESC $limit"
+			: "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' AND private='no' ORDER BY date DESC $limit";
+		$a = $this->_db->selectquery($query);
+		$i = 0;
+		$tot = count($a);
+		if($tot > 0) {
+			$ctrl = '';
+			$buffer .= "<div id=\"showcase_items_news_".$this->_instanceName."\">"; 
+			foreach($a as $b) {
+				$id = $b['id'];
+				$class = !$i ? ' active' : '';
+				$buffer .= "<div class='showcase_item".$class."' style='display: block;z-index:".($tot-$i)."' id=\"news_$i\">";
+				$title = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'displayNews', array("id"=>$id))."\">".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id))."</a>";
+				$text = cutHtmlText(htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id, 'id')), $this->_news_char, '...', true, false, true);
+				$buffer .= "<h2>$title</h2>";
+				$buffer .= $text;
+				$buffer .= "</div>";
+
+				$onclick = "changeShowcaseNews($i)";
+				$ctrl .= "<td><div id=\"sym_".$i."\" class=\"scase_sym".($class==' active' ? " on" : '')."\" onclick=\"$onclick\"></div></td>";
+
+				$i++;
+			}
+			$buffer .= "</div>";
+			
+			$buffer .= "<div class=\"showcase_ctrl\">";
+			$buffer .= "<table>";
+			$buffer .= "<tr>";
+			$buffer .= $ctrl;
+			$buffer .= "</tr>";
+			$buffer .= "</table>";
+			$buffer .= "</div>";
+		}
+
+		$htmlsection->content = $buffer;
+
+		return $htmlsection->render();
+	}
+
 	/**
 	 * Entry point per il backoffice 
 	 * 
