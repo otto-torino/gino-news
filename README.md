@@ -21,7 +21,7 @@ OPZIONI CONFIGURABILI
 ------------------------------
 - titolo ultime news
 - titolo elenco news
-- titolo vetrina news
+- titolo vetrina ultime news
 - visualizzazione categorie
 - numero di news visualizzate
 - numero di caratteri mostrati nei riassunti
