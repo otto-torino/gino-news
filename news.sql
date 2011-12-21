@@ -63,9 +63,11 @@ CREATE TABLE IF NOT EXISTS `news_opt` (
   `instance` int(200) NOT NULL,
   `title_last` varchar(200) NOT NULL,
   `title_page` varchar(200) NOT NULL,
+  `title_showcase` varchar(64) NOT NULL,
   `view_ctg` tinyint(1) NOT NULL,
   `home_news` int(3) NOT NULL,
   `page_news` int(3) NOT NULL,
+  `showcase_news` int(2) NOT NULL,
   `summary_char` int(5) NOT NULL,
   `layer` int(2) NOT NULL,
   `layer_width` int(4) NOT NULL,
@@ -77,7 +79,7 @@ CREATE TABLE IF NOT EXISTS `news_opt` (
   `width_thumb` int(5) NOT NULL,
   `feed_rss` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 --
 -- Table structure for table `news_usr`
