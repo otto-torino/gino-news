@@ -1432,7 +1432,7 @@ class news extends AbstractEvtClass{
 
 		$htmlsection->content = $GINO;
 		
-		$htmlsection->footer = "<p>".$this->_list->listReferenceGINO("evt[".$this->_instanceName."-manageDoc]&order=$order".($filterCtg?"&filterCtg=$filterCtg":""))."</p>";
+		$htmlsection->footer = "<p>".$this->_list->listReferenceGINO($this->_plink->aLink($this->_instanceName, 'manageDoc', '', "order=$order".($filterCtg?"&filterCtg=$filterCtg":""), array("basename"=>false)))."</p>";
 
 		return $htmlsection->render();
 
