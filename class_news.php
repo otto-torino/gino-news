@@ -3,7 +3,7 @@
  * \file class_news.php
  * Contiene la definizione ed implementazione della classe news.
  * 
- * @version 1.1
+ * @version 1.11
  * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
@@ -79,7 +79,7 @@ require_once(CLASSES_DIR.OS."class.category.php");
  * - elenco news paginate
  * - vista singola news
  * 
- * @version 1.1
+ * @version 1.11
  * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
