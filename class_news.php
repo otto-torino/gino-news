@@ -600,34 +600,6 @@ class news extends AbstractEvtClass{
 	}
 	
 	/**
-	 * Metodo chiamato per settare headlines personalizzati a seconda del metodo
-	 *
-	 * Questo metodo viene chiamato dalla classe document di Gino base per sovrascrivere il valore di alcuni
-	 * tag presenti nell'head (meta_title, description, image_src). Lo scopo è quello di personalizzare gli headlines
-	 * a seconda del metodo invocato. Utile soprattutto per la condivisione con i social networks. 
-	 * 
-	 * @param string $method il metodo per il quale settare gli headline
-	 * @access public
-	 * @return mixed array associativo contenente i valori dei tag head da settare, oppure null
-	 */
-	public function getHeadlines($method) {
-
-		if($method=='view') {
-			$id = cleanVar($_GET, 'id', 'int', '');
-
-			$title = htmlChars(pub::variable('head_title'))." - ".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id, 'id'));
-			$image = $this->_db->getFieldFromId($this->_tbl_news, 'img', 'id', $id);
-
-			$description = cutHtmlText(htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id, 'id')), $this->_news_char, '...', true, false, true);
-			$image_src = is_file($this->_data_dir.$this->_os.$this->_prefix_thumb.$image) 
-					? $this->_url_root.$this->_data_www."/".$this->_prefix_thumb.$image
-					: null;
-			return array("meta_title"=>$title, "description"=>$description, "image_src"=>$image_src);
-		}
-		else return null;
-	}
-
-	/**
 	 * Definizione dei metodi pubblici che forniscono un output per il front-end 
 	 * 
 	 * Questo metodo viene letto dal motore di generazione dei layout e dal motore di generazione di voci di menu
@@ -881,7 +853,22 @@ class news extends AbstractEvtClass{
 
 		$id = cleanVar($_GET, 'id', 'int', '');
 		$layer = cleanVar($_GET, 'layer', 'int', '');
-
+		
+		// Registry
+		$reg_title = htmlChars(pub::variable('head_title'))." - ".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id, 'id'));
+		$reg_description = cutHtmlText(htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id, 'id')), $this->_news_char, '...', true, false, true);
+		$reg_image = $this->_db->getFieldFromId($this->_tbl_news, 'img', 'id', $id);
+		$reg_image_src = is_file($this->_data_dir.$this->_os.$this->_prefix_thumb.$reg_image) 
+		? $this->_url_root.$this->_data_www."/".$this->_prefix_thumb.$reg_image : null;
+		
+		$registry = registry::instance();
+		$registry->description = $reg_description;
+		$registry->addMeta(array('name'=>'title', 'content'=>$reg_title));
+		$registry->addHeadLink(array('rel'=>'image_src', 'href'=>$reg_image_src));
+		// End
+		
+		$GINO = '';
+		
 		$query = "SELECT id, ctg, img, filename, ".$this->_field_date.", social FROM ".$this->_tbl_news." WHERE id='$id' AND published='1'";
 		$a = $this->_db->selectquery($query);
 		if(sizeof($a) > 0)
