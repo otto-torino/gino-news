@@ -711,7 +711,10 @@ class news extends AbstractEvtClass{
 		if($this->_feed_rss)
 			$htmlsection->headerLinks = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>";
 
-		$GINO = $this->scriptAsset("news_".$this->_instanceName.".css", "newsCSS".$this->_instance, 'css');
+		$registry = registry::instance();
+		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
+		
+		$GINO = '';
 		
 		$limit = $this->_db->limit($this->_news_homepage, 0);
 		$query = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
@@ -960,17 +963,18 @@ class news extends AbstractEvtClass{
 		else
 		{
 			$where = $ctg ? " AND ctg='$ctg'":"";
-		       	$search = ''; $link_search = '';
+			$search = ''; $link_search = '';
 		}
 
-		$GINO = $this->scriptAsset("news_".$this->_instanceName.".css", "newsCSS".$this->_instance, 'css');
-
+		$registry = registry::instance();
+		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
+		
 		$htmlsection = new htmlSection(array('id'=>"news_".$this->_instanceName,'class'=>'public', 'headerTag'=>'header', 'headerLabel'=>$this->_title_page));
 		
 		if($this->_feed_rss)
 			$htmlsection->headerLinks = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>";
 		
-		$GINO .= $search;
+		$GINO = $search;
 		
 		$numberTotRecord = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
 			? "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' $where"
@@ -982,7 +986,6 @@ class news extends AbstractEvtClass{
 			? "SELECT id, ctg, img, filename, ".$this->_field_date.", social FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' $where ORDER BY date DESC $limit"
 			: "SELECT id, ctg, img, filename, ".$this->_field_date.", social FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND private='no' AND published='1' $where ORDER BY date DESC $limit";
 		$a = $this->_db->selectquery($query);
-
 		if(sizeof($a) > 0)
 		{
 			foreach($a AS $b)
@@ -1123,9 +1126,12 @@ class news extends AbstractEvtClass{
 
 		$htmlsection = new htmlSection(array('id'=>"showcase_news_".$this->_instanceName,'class'=>'public', 'headerTag'=>'header', 'headerLabel'=>$this->_title_showcase));
 
-		$buffer = $this->scriptAsset("news_".$this->_instanceName.".css", "newsCSS".$this->_instance, 'css');
-		$buffer .= $this->scriptAsset("news.js", "newsJS".$this->_instance, 'js');
-
+		$registry = registry::instance();
+		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
+		$registry->addJs($this->_class_www."/news.js");
+		
+		$buffer = '';
+		
 		$limit = $this->_db->limit($this->_news_showcase, 0);
 		$query = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
 			? "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' ORDER BY date DESC $limit"
