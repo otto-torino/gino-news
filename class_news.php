@@ -1777,7 +1777,8 @@ class news extends AbstractEvtClass{
 				$id = htmlChars($b['id']);
 				$title = htmlChars($this->_trd->selectTXT('news', 'title', $id));
 				$text = htmlChars($this->_trd->selectTXT('news', 'text', $id));
-				$text = str_replace("src=\"", "src=\"".$this->_web_address, $text);
+				$text = str_replace("src=\"", "src=\"".substr($this->_url_root,0,strrpos($this->_url_root,"/")), $text);
+				$text = str_replace("href=\"", "href=\"".substr($this->_url_root,0,strrpos($this->_url_root,"/")), $text);
 				
 				$datetime = htmlChars($b['date']);
 				$datetime_array = explode(" ", $datetime);
