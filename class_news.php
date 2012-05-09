@@ -806,7 +806,7 @@ class news extends AbstractEvtClass{
 		$textCut = $full ? $text : $this->printSummary($text);
 		
 		if($full && $social=='yes') {
-			$text .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id)));
+			$textCut .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id)));
 		}
 		
 		$htmlarticle = new htmlArticle(array('class'=>'public'));
