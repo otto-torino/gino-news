@@ -801,12 +801,13 @@ class news extends AbstractEvtClass{
 
 		$title = "<span class=\"link newsTitle\" $onclick_exp>".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id))."</span>";
 		$text = htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id));
-		if($filename) $text .= "<p><a href=\"".$this->_plink->aLink($this->_instanceName, 'downloader', array("id"=>$id))."\">$filename</a></p>";			
-		if($social=='yes') {
-			$text .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id)));
-		}
+		if($filename) $text .= "<p><a href=\"".$this->_plink->aLink($this->_instanceName, 'downloader', array("id"=>$id))."\">$filename</a></p>";
 
 		$textCut = $full ? $text : $this->printSummary($text);
+		
+		if($full && $social=='yes') {
+			$textCut .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id)));
+		}
 		
 		$htmlarticle = new htmlArticle(array('class'=>'public'));
 
@@ -1777,7 +1778,8 @@ class news extends AbstractEvtClass{
 				$id = htmlChars($b['id']);
 				$title = htmlChars($this->_trd->selectTXT('news', 'title', $id));
 				$text = htmlChars($this->_trd->selectTXT('news', 'text', $id));
-				$text = str_replace("src=\"", "src=\"".$this->_web_address, $text);
+				$text = str_replace("src=\"", "src=\"".substr($this->_url_root,0,strrpos($this->_url_root,"/")), $text);
+				$text = str_replace("href=\"", "href=\"".substr($this->_url_root,0,strrpos($this->_url_root,"/")), $text);
 				
 				$datetime = htmlChars($b['date']);
 				$datetime_array = explode(" ", $datetime);
