@@ -1,7 +1,7 @@
 <?php
 /**
 * @file view/last.php
-* @ingroup news
+* @ingroup gino-news
 * @brief Template per la vista ultime news
 *
 * Variabili disponibili:

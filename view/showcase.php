@@ -1,7 +1,7 @@
 <?php
 /**
 * @file view/showcase.php
-* @ingroup news
+* @ingroup gino-news
 * @brief Template per la vista vetrina news
 *
 * Variabili disponibili:

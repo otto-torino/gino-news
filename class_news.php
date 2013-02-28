@@ -1,7 +1,7 @@
 <?php
 /**
  * \file class_news.php
- * Contiene la definizione ed implementazione della classe news.
+ * @brief Contiene la definizione ed implementazione della classe \ref news.
  * 
  * @version 1.12
  * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
@@ -9,9 +9,8 @@
  * @authors abidibo abidibo@gmail.com
  */
 
-/**
- * Caratteristiche, opzioni configurabili da backoffice ed output disponibili per i template e le voci di menu.
- *
+/** \mainpage Caratteristiche, opzioni configurabili da backoffice ed output disponibili per i template e le voci di menu.    
+ *        
  * CARATTERISTICHE    
  *  
  * Modulo di gestione news categorizzate 
@@ -43,7 +42,7 @@ require_once('class.newsItem.php');
 require_once('class.newsCtg.php');
 
 /**
-* @defgroup news
+* @defgroup gino-news
 * Modulo di gestione news categorizzate
 *
 * Il modulo contiene anche dei css, javascript e file di configurazione.
@@ -51,7 +50,7 @@ require_once('class.newsCtg.php');
 */
 
 /**
- * \ingroup news
+ * \ingroup gino-news
  * Classe per la gestione di news categorizzate.
  *
  * Gli output disponibili sono:

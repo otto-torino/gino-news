@@ -1,7 +1,7 @@
 <?php
 /**
 * @file view/detail.php
-* @ingroup news
+* @ingroup gino-news
 * @brief Template per la vista dettaglio news
 *
 * Variabili disponibili:

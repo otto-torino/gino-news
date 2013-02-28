@@ -1,7 +1,7 @@
 <?php
 /**
  * \file class.newsCtg.php
- * Contiene la definizione ed implementazione della classe newsCtg.
+ * @brief Contiene la definizione ed implementazione della classe newsCtg.
  * 
  * @version 1.12
  * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
@@ -10,7 +10,7 @@
  */
 
 /**
- * \ingroup news
+ * \ingroup gino-news
  * Classe tipo model che rappresenta una categoria di news.
  *
  * @version 1.12
