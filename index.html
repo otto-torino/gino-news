@@ -1,7 +1,7 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en_EN" xml:lang="en_EN">
+<!DOCTYPE html>
+<html lang="it_IT">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta charset="utf-8" />
 <meta name="description" content="gino news, a gino module" />
 <meta name="keywords" content="PHP,CMS,LAMP,gino,news" />
 <title>Gino News</title>
@@ -44,6 +44,9 @@ a:hover { text-decoration:underline; }
 <li><b>condivisione social networks</b></li>
 <li><b>visualizzazione ristretta a gruppi di utenti di sistema</b></li>
 <li><b>flusso redazionale</b> (gestione della pubblicazione e di un gruppo di utenti redattori)</li>
+<li><b>personalizzazione dei template di visualizzazione da opzioni</b></li>
+<li><b>contenuti ricercabilii</b> attraverso il modulo "Ricerca nel sito" di Gino</li>
+<li><b>contenuti resi disponibili al modulo newsletter di Gino</b> (il modulo deve essere installato sul sistema)</li>
 </ul>
 
 <h2>Opzioni</h2>
@@ -51,15 +54,17 @@ a:hover { text-decoration:underline; }
 <li>titolo ultime news</li>
 <li>titolo elenco news</li>
 <li>titolo vetrina ultime news</li>
-<li>visualizzazione categorie</li>
-<li>numero di news visualizzate</li>
-<li>numero di caratteri mostrati nei riassunti</li>
-<li>modalità di visualizzazione della news completa (layer, expand, nuova pagina)</li>
-<li>dimensioni layer (vedi opzione precedente)</li>
-<li>effetto lightbox sull'immagine</li>
-<li>modulo di ricerca visibile</li>
-<li>larghezza delle immagini a seguito di ridimensionamento e creazione thumb</li>
-<li>feed RSS</li>
+<li>template singolo elemento nella vista ultime newsz</li>
+<li>numero di ultime news visualizzatez</li>
+<li>template singolo elemento nella vista archivio newsz</li>
+<li>numero news per paginaz</li>
+<li>template singolo elemento nella vista vetrina ultime newsz</li>
+<li>numero di news mostrate nella vetrinaz</li>
+<li>animazione automatica elementi vetrinaz</li>
+<li>intervallo animazione automaticaz</li>
+<li>template dettaglio newsz</li>
+<li>larghezza massima immaginez</li>
+<li>larghezza thumbz</li>
 </ul>
 
 <h2>Outputs</h2>
@@ -67,6 +72,7 @@ a:hover { text-decoration:underline; }
 <li>lista ultime news (numero configurabile da opzioni)</li>
 <li>lista completa news paginata</li>
 <li>vetrina ultime news</li>
+<li>feed RSS</li>
 </ul>
 
 <h2>Installazione</h2>
