@@ -1,412 +1,186 @@
 <?php
 /**
  * \file class_news.php
- * Contiene la definizione ed implementazione della classe news.
+ * @brief Contiene la definizione ed implementazione della classe \ref news.
  * 
- * @version 1.11
- * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @version 2.0
+ * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
  */
 
-/**
- * \mainpage Caratteristiche, opzioni configurabili da backoffice ed output disponibili per i template e le voci di menu.
+/** \mainpage Caratteristiche, opzioni configurabili da backoffice ed output disponibili per i template e le voci di menu.    
+ *        
+ * CARATTERISTICHE    
+ *  
+ * Modulo di gestione news categorizzate 
  *
- * CARATTERISTICHE
- * - titolo
- * - categoria (opzionale)
- * - data
- * - testo
- * - immagine (ridimensionamento e creazione thumb automatizzati)
- * - file allegato
- * - condivisione social networks
- * - visualizzazione ristretta a gruppi di utenti di sistema
- * - gestione della pubblicazione e di un gruppo di utenti redattori
- * 
  * OPZIONI CONFIGURABILI
  * - titolo ultime news
  * - titolo elenco news
- * - titolo vetrina
- * - visualizzazione categorie
- * - numero di news visualizzate
- * - numero di caratteri mostrati nei riassunti
- * - modalità di visualizzazione della news completa (layer, expand, nuova pagina)
- * - dimensioni layer (vedi opzione precedente)
- * - effetto lightbox sull'immagine
- * - modulo di ricerca visibile
- * - larghezza delle immagini a seguito di ridimensionamento e creazione thumb
- * - feed RSS
+ * - titolo vetrina news
+ * - template sinfgolo elemento nella vista ultime news
+ * - numero ultime news
+ * - template singolo elemento vista elenco news
+ * - numero di news per pagina
+ * - template singolo elemento vista vetrina news
+ * - numero di news in vetrina
+ * - inizio automatico animazione vetrina
+ * - intervallo animazione vetrina
+ * - template dettaglio news
+ * - larghezza massima immagini
+ * - larghezza massima thumbs
  *
  * OUTPUTS
- * - lista ultime news (numero configurabile da opzioni)
- * - lista completa news paginata
+ * - ultime news
+ * - archivio news
  * - vetrina news
- *
+ * - dettaglio news
+ * - feed RSS
  */
+require_once('class.newsItem.php');
+require_once('class.newsCtg.php');
 
 /**
- * @defgroup news
- * Modulo per la gestione di news categorizzate pubbliche o private
- *
- * Il modulo contiene anche dei css, javascript e file di configurazione.
- * 
- */
-
-
-require_once(CLASSES_DIR.OS."class.category.php");
+* @defgroup gino-news
+* Modulo di gestione news categorizzate
+*
+* Il modulo contiene anche dei css, javascript e file di configurazione.
+*
+*/
 
 /**
- * \ingroup news
+ * \ingroup gino-news
  * Classe per la gestione di news categorizzate.
- *
- * Campi:
- *
- * - ctg: categoria
- * - title: titolo della news
- * - text: testo della news
- * - img: campo file immagine, con generazione automatica di thumb personalizzabile da opzioni
- * - filename: campo file allegato
- * - date: data di pubblicazione
- * - private: accesso alla news ristretto agli appartenenti al gruppo "iscritti"
- * - social: attivazione condivisione social networks
- * - published: pubblicazione della news
- *
- * Il modulo comprende una vasta serie di opzioni per controllare al meglio la parte pubblica.
  *
  * Gli output disponibili sono:
  *
  * - ultime n news (n da opzioni)
  * - elenco news paginate
+ * - vetrina news
  * - vista singola news
+ * - feed RSS
  * 
- * @version 1.11
- * @copyright 2005 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @version 2.0
+ * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
  */
-class news extends AbstractEvtClass{
+class news extends AbstractEvtClass {
 
 	/**
-	 * Percorso assoluto alla cartella di upload di immagini ed allegati 
-	 *
-	 * @var string 
-	 * @access protected 
-	 */
-	protected $_data_dir;
-
-	/**
-	 * Percorso relativo alla cartella di upload di immagini ed allegati 
-	 * 
-	 * @var string 
-	 * @access protected
-	 */
-	protected $_data_www;
-
-	/**
-	 * Array associativo contenente i valori di default delle opzioni 
-	 * 
-	 * @var array[string]mixed 
-	 * @access private
-	 */
-	private $_optionsValue;
-
-	/**
-	 * Opzione titolo della vista "ultime news" 
-	 * 
-	 * @var string 
-	 * @access private
+	 * @brief titolo della view ultime news  
 	 */
 	private $_title_last;
 
 	/**
-	 * Opzione titolo della vista "elenco news" 
-	 * 
-	 * @var string 
-	 * @access private
+	 * @brief titolo della view lista news  
 	 */
-	private $_title_page;
+	private $_title_list;
 
 	/**
-	 * Opzione titolo della vista "vetrina" 
-	 * 
-	 * @var string 
-	 * @access private
+	 * @brief titolo della view vetrina news  
 	 */
 	private $_title_showcase;
 
- 	/**
- 	 * Opzione visualizzazione categorie (bool 0 | 1 ) 
- 	 * 
- 	 * @var int 
- 	 * @access private
- 	 */
- 	private $_view_ctg;
-	
 	/**
-	 * Opzione numero di news per pagina nella vista "elenco news" 
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief Template elemento ultime news  
 	 */
-	private $_news_for_page;
+	private $_last_news_code;
 
 	/**
-	 * Opzione numero di news mostrate nella vista "ultime news" 
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief numero di ultime news  
 	 */
-	private $_news_homepage;
-	
-	/**
-	 * Opzione numero di news mostrate nella vista "vetrina" 
-	 * 
-	 * @var int 
-	 * @access private
-	 */
-	private $_news_showcase;
+	private $_last_news_number;
 
 	/**
-	 * Opzione numero di caratteri mostrati per news nella vista "ultime news" 
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief Template elemento elenco news  
 	 */
-	private $_news_char;
+	private $_list_news_code;
 
 	/**
-	 * Opzione modalità di apertura news completa (1: layer, 2: espansione, 3: nuova pagina) 
-	 * 
-	 * @var int  
-	 * @access private
+	 * @brief numero di news per pagina nella vista elenco news 
 	 */
-	private $_win_layer;
+	private $_list_nfp;
 
 	/**
-	 * Opzione larghezza layer (px)
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief Template elemento showcase news  
 	 */
-	private $_win_width;
+	private $_showcase_news_code;
 
 	/**
-	 * Opzione altezza layer (px)
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief Template dettaglio singola news  
 	 */
-	private $_win_height;
-	
-	/**
-	 * Opzione abilitazione effetto lightbox sulle thumb (bool 0 | 1) 
-	 * 
-	 * @var int 
-	 * @access private
-	 */
-	private $_news_img_lightbox;
+	private $_detail_news_code;
 
 	/**
-	 * Opzione visualizza news completa al click sull'immagine thumb (bool 0 | 1). Se attiva disabilita l'opzione lightbox 
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief numero di news nella vetrina  
 	 */
-	private $_img_expand;	
-	
-	/**
-	 * Opzione visualizzazione form di ricerca in "elenco news" 
-	 * 
-	 * @var int 
-	 * @access private
-	 */
-	private $_search_form;
-	
-	/**
-	 * Opzione larghezza usata per il ridimensionamnto delle immagini (px) 
-	 * 
-	 * @var int 
-	 * @access private
-	 */
-	private $_width_img;
+	private $_showcase_news_number;
 
 	/**
-	 * Opzione larghezza usata per la generazione delle thumb (px) 
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief animazione vetrina start automatico  
 	 */
-	private $_width_thumb;
+	private $_showcase_auto_start;
 
 	/**
-	 * Opzione visualizzazione link feed rss 
-	 * 
-	 * @var int 
-	 * @access private
+	 * @brief animazione vetrina intervallo animazione  
 	 */
-	private $_feed_rss;
-	
-	/**
-	 * Oggetto di tipo options per la gestione automatica delle opzioni 
-	 * 
-	 * @var object 
-	 * @access private
-	 */
-	private $_options;
+	private $_showcase_auto_interval;
 
 	/**
-	 * Elenco di proprietà delle opzioni per la creazione del form delle opzioni 
-	 * 
-	 * @var array[string]mixed 
-	 * @access public
+	 * @brief larghezza immagini  
 	 */
-	public $_optionsLabels;
-	
-	/**
-	 * Contiene gli id dei gruppi abilitati alla pubblicazione delle news 
-	 * 
-	 * @var array 
-	 * @access private
-	 */
-	private $_group_1;
+	private $_image_width;
 
 	/**
-	 * Contiene gli id dei gruppi abilitati alla redazione delle news 
-	 * 
-	 * @var array 
-	 * @access private
+	 * @brief larghezza thumb  
 	 */
-	private $_group_2;
+	private $_thumb_width;
 
 	/**
-	 * Contiene gli id dei gruppi abilitati alla visualizzazione delle news private 
-	 * 
-	 * @var array 
-	 * @access private
+	 * @brief Template dettaglio singola news in esportazione newsletter
 	 */
-	private $_group_3;
-	
-	/**
-	 * Settaggio della toolbar dell'editor CKEditor, possibili valori: 'Basic' | 'Full' 
-	 * 
-	 * @var string 
-	 * @access private
+	private $_newsletter_news_code;
+
+    /**
+	 * @brief Numero ultime news esportate in lista newsletter
 	 */
-	private $_fck_toolbar = 'Full';
+	private $_newsletter_news_number;
 
 	/**
-	 * Larghezza dell'editor CKEditor (#pixel oppure %, i.e. 500 | '90%') 
-	 * 
-	 * @var mixed 
-	 * @access private
+	 * @brief Tabella di opzioni 
 	 */
-	private $_fck_width = '100%';
+	private $_tbl_opt;
 
 	/**
-	 * Altezza dell'editor CKEditor (#pixel oppure %, i.e. 300 | '90%') 
-	 * 
-	 * @var mixed 
-	 * @access private
+	 * @brief Tabella di associazione utenti/gruppi 
 	 */
-	private $_fck_height = 150;
-	
-	/**
-	 * Nome della tabella che contiene i record delle news 
-	 * 
-	 * @var string 
-	 * @access private
-	 */
-	private $_tbl_news = 'news';
-
- 	/**
- 	 * Nome della tabella che contiene le categorie 
- 	 * 
- 	 * @var string 
- 	 * @access private
- 	 */
- 	private $_tbl_ctg = 'news_ctg';
- 	
-	/**
-	 * Nome della tabella che contiene le opzioni 
-	 * 
-	 * @var string 
-	 * @access private
-	 */
-	private $_tbl_opt = 'news_opt';
+	private $_tbl_usr;
 
 	/**
-	 * Nome della tabella che contiene l'associazione utenti-gruppi 
-	 * 
-	 * @var string 
-	 * @access private
+	 * Percorso assoluto alla directory contenente le viste 
 	 */
-	private $_tbl_usr = 'news_usr';
+	private $_view_dir;
 
-	/**
-	 * Nome del campo data di pubblicazione 
-	 * 
-	 * @var string 
-	 * @access private
-	 */
-	private $_field_date = 'date';
-	
-	/**
-	 * Lista delle estensioni permesse per l'upload di immagini (estensioni supportate: jpg, png se supportate dalle librerie gd) 
-	 * 
-	 * @var array 
-	 * @access private
-	 */
-	private $_extension_media;
-
-	/**
-	 * Lista delle estensioni permesse per l'upload di allegati 
-	 * 
-	 * @var array 
-	 * @access private
-	 */
-	private $_extension_attach;
-	
-	/**
-	 * Prefisso delle immagini uploadate 
-	 * 
-	 * @var string prefisso delle immagini uploadate
-	 * @access private
-	 */
-	private $_prefix_img = 'img_';
-
-	/**
-	 * Prefisso delle thumb generate dalle immagini uploadate 
-	 * 
-	 * @var string 
-	 * @access private
-	 */
-	private $_prefix_thumb = 'thumb_';
-	
-	/**
+	/*
 	 * Parametro action letto da url 
-	 * 
-	 * @var string 
-	 * @access private
 	 */
 	private $_action;
 
-	/**
+	/*
 	 * Parametro block letto da url 
-	 * 
-	 * @var string 
-	 * @access private
 	 */
 	private $_block;
 	
 	/**
-	 * Costruisce un'istanza di tipo news 
-	 * 
+	 * Costruisce un'istanza di tipo news
+	 *
 	 * @param int $mdlId id dell'istanza di tipo news
-	 * @access public
-	 * @return void
+	 * @return istanza di news
 	 */
-	function __construct($mdlId){
-		
+	function __construct($mdlId) {
+
 		parent::__construct();
 
 		$this->_instance = $mdlId;
@@ -416,96 +190,197 @@ class news extends AbstractEvtClass{
 		$this->_data_dir = $this->_data_dir.$this->_os.$this->_instanceName;
 		$this->_data_www = $this->_data_www."/".$this->_instanceName;
 
+		$this->_tbl_opt = 'news_opt';
+		$this->_tbl_usr = 'news_usr';
+
 		$this->setAccess();
 		$this->setGroups();
-		
-		/*
-			Opzioni
-		*/
-		
-		// Valori di default
+
+		$this->_view_dir = dirname(__FILE__).OS.'view';
+
+		$last_news_code = "<article><p>{{ thumb|class:left }}</p><h1>{{ title|link }}</h1>{{ text|chars:80 }}<div class="null"></div></article>";
+		$list_news_code = "<article><header><h1>{{ title }}</h1><p>Pubblicata il <time>{{ date }}</time> in {{ categories }}</p></header>{{ img|class:left }}{{ text }}{{ social }}<div class="null"></div></article>";
+		$showcase_news_code = "<article><p>{{ img|class:left }}</p><h1>{{ title|link }}</h1>{{ text|chars:500 }}</article>";
+		$detail_news_code = "<header><h1>{{ title }}</h1><p>Pubblicata il <time>{{ date }}</time> in {{ categories }}</p></header>{{ img|class:left }}{{ text }}<p>{{ attached }}</p>{{ social }}<div class="null"></div>";
+
 		$this->_optionsValue = array(
-			'title_last'=>_("News"), 
-			'title_page'=>_("News"), 
-			'title_showcase'=>_("News"), 
-			'home_news'=>4, 
-			'page_news'=>10, 
-			'showcase_news'=>4, 
-			'summary_char'=>60, 
-			'layer'=>2, 
-			'layer_width'=>300, 
-			'layer_height'=>150, 
-			'width_img'=>600, 
-			'width_thumb'=>80
+			'title_last'=>_("Ultime news"),
+			'title_list'=>_("Elenco news"),
+			'title_showcase'=>_("News"),
+			'last_news_code'=>$last_news_code,
+			'last_news_number'=>3,
+			'list_news_code'=>$list_news_code,
+			'list_nfp'=>5,
+			'showcase_news_code'=>$showcase_news_code,
+			'showcase_news_number'=>5,
+			'showcase_auto_start'=>0,
+			'showcase_auto_interval'=>5000,
+			'detail_news_code'=>$detail_news_code,
+			'image_width'=>600,
+			'thumb_width'=>80,
+			'newsletter_news_code'=>$last_news_code,
+			'newsletter_news_number'=>50,
 		);
 
+		$code_exp = _("Le proprietà della news devono essere inserite all'interno di doppie parentesi {{ proprietà }}. Proprietà disponibili:<br/>");
+		$code_exp .= "<ul>";
+		$code_exp .= "<li><b>thumb</b>: "._('thumbnail')."</li>";
+		$code_exp .= "<li><b>thumb_path</b>: "._('path della thumbnail')."</li>";
+		$code_exp .= "<li><b>img</b>: "._('immagine')."</li>";
+		$code_exp .= "<li><b>img_path</b>: "._('path dell\'immagine')."</li>";
+		$code_exp .= "<li><b>title</b>: "._('titolo')."</li>";
+		$code_exp .= "<li><b>text</b>: "._('testo')."</li>";
+		$code_exp .= "<li><b>date</b>: "._('data')."</li>";
+		$code_exp .= "<li><b>attached</b>: "._('link allegato')."</li>";
+		$code_exp .= "<li><b>categories</b>: "._('categorie associate')."</li>";
+		$code_exp .= "<li><b>categories_images</b>: "._('immagini categorie associate')."</li>";
+		$code_exp .= "<li><b>url</b>: "._('url che porta al dettaglio della news')."</li>";
+		$code_exp .= "<li><b>social</b>: "._('condivisione social')."</li>";
+		$code_exp .= "<li><b>feed</b>: "._('link ai feed RSS')."</li>";
+		$code_exp .= "</ul>";
+		$code_exp .= _("Inoltre si possono eseguire dei filtri o aggiungere link facendo seguire il nome della proprietà dai caratteri '|filtro'. Disponibili:<br />");
+		$code_exp .= "<ul>";
+		$code_exp .= "<li><b><span style='text-style: normal'>|link</span></b>: "._('aggiunge il link che porta al dettaglio della news alla proprietà')."</li>";
+		$code_exp .= "<li><b><span style='text-style: normal'>|layer:600x400</span></b>: "._('aggiunge il link che apre il dettaglio della news in un layer (w 600, h 400) alla proprietà. Per non fissare l\'altezza impostarla uguale a 0')."</li>";
+		$code_exp .= "<li><b><span style='text-style: normal'>thumb|class:name_class</span></b>: "._('aggiunge la classe name_class alla thumb o all\'immagine')."</li>";
+		$code_exp .= "<li><b><span style='text-style: normal'>thumb|style:\"styles\"</span></b>: "._('aggiunge gli stili (styles) alla thumb o all\'immagine')."</li>";
+		$code_exp .= "<li><b><span style='text-style: normal'>|chars:n</span></b>: "._('mostra solo n caratteri della proprietà')."</li>";
+		$code_exp .= "</ul>";
+
 		$this->_title_last = htmlChars($this->setOption('title_last', array('value'=>$this->_optionsValue['title_last'], 'translation'=>true)));
-		$this->_title_page = htmlChars($this->setOption('title_page', array('value'=>$this->_optionsValue['title_page'], 'translation'=>true)));
+		$this->_title_list = htmlChars($this->setOption('title_list', array('value'=>$this->_optionsValue['title_list'], 'translation'=>true)));
 		$this->_title_showcase = htmlChars($this->setOption('title_showcase', array('value'=>$this->_optionsValue['title_showcase'], 'translation'=>true)));
-		$this->_view_ctg = $this->setOption('view_ctg');
-		$this->setNewsHomePage($this->setOption('home_news', array('value'=>$this->_optionsValue['home_news'])));
-		$this->setNewsForPage($this->setOption('page_news', array('value'=>$this->_optionsValue['page_news'])));
-		$this->_news_showcase = $this->setOption('showcase_news', array('value'=>$this->_optionsValue['showcase_news']));
-		$this->_news_char = $this->setOption('summary_char', array('value'=>$this->_optionsValue['summary_char']));
-		$this->_win_layer = $this->setOption('layer', array('value'=>$this->_optionsValue['layer']));
-		$this->_win_width = $this->setOption('layer_width', array('value'=>$this->_optionsValue['layer_width']));
-		$this->_win_height = $this->setOption('layer_height', array('value'=>$this->_optionsValue['layer_height']));
-		$this->_news_img_lightbox = $this->setOption('img_lightbox');
-		$this->_img_expand = $this->setOption('img_expand');
-		$this->_search_form = $this->setOption('news_search');
-		$this->_width_img = $this->setOption('width_img', array('value'=>$this->_optionsValue['width_img']));
-		$this->_width_thumb = $this->setOption('width_thumb', array('value'=>$this->_optionsValue['width_thumb']));
-		$this->_feed_rss = $this->setOption('feed_rss');
+		$this->_last_news_code = $this->setOption('last_news_code', array('value'=>$this->_optionsValue['last_news_code'], 'translation'=>true));
+		$this->_last_news_number = $this->setOption('last_news_number', array('value'=>$this->_optionsValue['last_news_number']));
+		$this->_list_news_code = $this->setOption('list_news_code', array('value'=>$this->_optionsValue['list_news_code'], 'translation'=>true));
+		$this->_list_nfp = $this->setOption('list_nfp', array('value'=>$this->_optionsValue['list_nfp']));
+		$this->_showcase_news_code = $this->setOption('showcase_news_code', array('value'=>$this->_optionsValue['showcase_news_code'], 'translation'=>true));
+		$this->_showcase_news_number = $this->setOption('showcase_news_number', array('value'=>$this->_optionsValue['showcase_news_number']));
+		$this->_showcase_auto_start = $this->setOption('showcase_auto_start', array('value'=>$this->_optionsValue['showcase_auto_start']));
+		$this->_showcase_auto_interval = $this->setOption('showcase_auto_interval', array('value'=>$this->_optionsValue['showcase_auto_interval']));
+		$this->_detail_news_code = $this->setOption('detail_news_code', array('value'=>$this->_optionsValue['detail_news_code'], 'translation'=>true));
+		$this->_image_width = $this->setOption('image_width', array('value'=>$this->_optionsValue['image_width']));
+		$this->_thumb_width = $this->setOption('thumb_width', array('value'=>$this->_optionsValue['thumb_width']));
+		$this->_newsletter_news_code = $this->setOption('newsletter_news_code', array('value'=>$this->_optionsValue['newsletter_news_code'], 'translation'=>true));
+		$this->_newsletter_news_number = $this->setOption('newsletter_news_number', array('value'=>$this->_optionsValue['newsletter_news_number']));
 
 		$this->_options = new options($this->_className, $this->_instance);
 		$this->_optionsLabels = array(
-			"title_last"=>array('label'=>_("Titolo ultime news"), 'value'=>$this->_optionsValue['title_last'], 'required'=>false),
-			"title_page"=>array('label'=>_("Titolo news paginate"), 'value'=>$this->_optionsValue['title_page'], 'required'=>false),
-			"title_showcase"=>array('label'=>_("Titolo vetrina"), 'value'=>$this->_optionsValue['title_showcase'], 'required'=>false),
-			"view_ctg"=>array('label'=>_("Visualizza categorie (pagina)")),
-			"home_news"=>array('label'=>_("Numero news mostrate in 'ultime news'"), 'value'=>$this->_optionsValue['home_news']),
-			"page_news"=>array('label'=>_("Numero news per pagina"), 'value'=>$this->_optionsValue['page_news']),
-			"showcase_news"=>array('label'=>_("Numero news vetrina"), 'value'=>$this->_optionsValue['showcase_news']),
-			"summary_char"=>array('label'=>_("Numero caratteri riassunto"), 'value'=>$this->_optionsValue['summary_char']),
-			"layer"=>array('label'=>array(_("Visualizzazione news completa"), _("'1': apertura in layer (no social)<br/>'2': apertura nella pagina stessa<br />'3': apertura in nuova pagina"))),
-			"layer_width"=>array('label'=>array(_("Larghezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente")), 'value'=>$this->_optionsValue['layer_width']),
-			"layer_height"=>array('label'=>array(_("Altezza finestra (px)"), _("attiva solo se si setta a 'sì' l'opzione precedente. Se il campo viene lasciato vuoto o nullo l'altezza verrà settata automaticamente dal sistema a seconsa del contenuto")), 'value'=>$this->_optionsValue['layer_height']),
-			"img_lightbox"=>array('label'=>_("Effetto lightbox sulla thumb")),
-			"img_expand"=>array('label'=>array(_("Effetto espansione news sulla thumb"), _("se attivo disabilita l'opzione precedente"))),
-			"news_search"=>array('label'=>_("Ricerca news")),
-			"width_img"=>array('label'=>_("Larghezza max immagini (px)"), 'value'=>$this->_optionsValue['width_img']),
-			"width_thumb"=>array('label'=>_("Larghezza max thumbs delle immagini (px)"), 'value'=>$this->_optionsValue['width_thumb']),
-			"feed_rss"=>array('label'=>_("Attiva feed RSS"))
+			"title_last"=>array(
+				'label'=>_("Titolo ultime news"), 
+				'value'=>$this->_optionsValue['title_last'], 
+				'section'=>true, 
+				'section_title'=>_('Titoli delle viste pubbliche')
+			),
+			"title_list"=>array(
+				'label'=>_("Titolo elenco news"),
+				'value'=>$this->_optionsValue['title_list']
+			),
+			"title_showcase"=>array(
+				'label'=>_("Titolo vetrina news"),
+				'value'=>$this->_optionsValue['title_showcase']
+			),
+			"last_news_code"=>array(
+				'label'=>array(_("Template singolo elemento vista ultime news"), $code_exp), 
+				'value'=>$this->_optionsValue['last_news_code'],
+				'section'=>true, 
+				'section_title'=>_('Opzioni vista ultime news'),
+				'section_description'=>"<p>"._('Il template verrà utilizzato per ogni news ed inserito all\'interno di una section')."</p>"
+			), 
+			"last_news_number"=>array(
+				'label'=>_("Numero ultime news"),
+				'value'=>$this->_optionsValue['last_news_number']
+			),
+			"list_news_code"=>array(
+				'label'=>array(_("Template singolo elemento vista elenco news"), _("Vedi 'Template singolo elemento vista ultime news' per le proprietà e filtri disponibili")), 
+				'value'=>$this->_optionsValue['list_news_code'],
+				'section'=>true, 
+				'section_title'=>_('Opzioni vista elenco news'),
+				'section_description'=>"<p>"._('Il template verrà utilizzato per ogni news ed inserito all\'interno di una section')."</p>"
+			), 
+			"list_nfp"=>array(
+				'label'=>_("Numero news per pagina"),
+				'value'=>$this->_optionsValue['list_nfp']
+			),
+			"showcase_news_code"=>array(
+				'label'=>array(_("Template singolo elemento vista vetrina news"), _("Vedi 'Template singolo elemento vista ultime news' per le proprietà e filtri disponibili")), 
+				'value'=>$this->_optionsValue['showcase_news_code'],
+				'section'=>true, 
+				'section_title'=>_('Opzioni vista vetrina news')
+			), 
+			"showcase_news_number"=>array(
+				'label'=>_("Numero news"),
+				'value'=>$this->_optionsValue['showcase_news_number']
+			),
+			"showcase_auto_start"=>array(
+				'label'=>_("Animazione automatica"),
+				'value'=>$this->_optionsValue['showcase_auto_start']
+			),
+			"showcase_auto_interval"=>array(
+				'label'=>_("Intervallo animazione automatica (ms)"),
+				'value'=>$this->_optionsValue['showcase_auto_start']
+			),
+			"detail_news_code"=>array(
+				'label'=>array(_("Template dettaglio news"), _("Vedi 'Template singolo elemento vista ultime news' per le proprietà e filtri disponibili")), 
+				'value'=>$this->_optionsValue['detail_news_code'],
+				'section'=>true, 
+				'section_title'=>_('Opzioni vista dettaglio news'),
+				'section_description'=>"<p>"._('Il template verrà utilizzato per la news selezionata ed inserito all\'interno di una section')."</p>"
+			), 
+			"image_width"=>array(
+				'label'=>_("Larghezza massima immagini"), 
+				'value'=>$this->_optionsValue['image_width'],
+				'section'=>true, 
+				'section_title'=>_('Opzioni ridimensionamento immagini')
+			), 
+			"thumb_width"=>array(
+				'label'=>_("Larghezza massima thumbnail"), 
+				'value'=>$this->_optionsValue['thumb_width']
+			), 
+			"newsletter_news_code"=>array(
+				'label'=>array(_("Template singolo elemento esportazione newsletter"), _("Vedi 'Template singolo elemento vista ultime news' per le proprietà e filtri disponibili")), 
+				'value'=>$this->_optionsValue['newsletter_news_code'],
+				'section'=>true, 
+				'section_title'=>_('Opzioni esportazione per newsletter')
+			), 
+			"newsletter_news_number"=>array(
+				'label'=>_("Numero news esportate nella lista"),
+				'value'=>$this->_optionsValue['newsletter_news_number']
+			),
 		);
-
-		if(!pub::enabledPng()) {
-			$this->_extension_media = array('jpg');
-		}
-		else {
-			$this->_extension_media = array('png', 'jpg');
-		}
-
-		$this->_extension_attach = array('pdf', 'txt', 'rtf', 'doc');
 
 		$this->_action = cleanVar($_REQUEST, 'action', 'string', '');
 		$this->_block = cleanVar($_REQUEST, 'block', 'string', '');
+
 	}
-	
+
 	/**
-	 * Restituisce alcune proprietà della classe utili per la generazione di nuove istanze 
-	 * 
+	 * Restituisce alcune proprietà della classe utili per la generazione di nuove istanze
+	 *
 	 * @static
-	 * @access public
-	 * @return array[string]array lista proprietà utilizzate per la creazione di istanze di tipo news
+	 * @return lista delle proprietà utilizzate per la creazione di istanze di tipo news
 	 */
 	public static function getClassElements() {
 
-		return array("tables"=>array('news', 'news_ctg', 'news_opt', 'news_grp', 'news_usr'),
-			     "css"=>array('news.css'),
-			     "folderStructure"=>array(
-				CONTENT_DIR.OS.'news'=>null	
-	     		     )
-		      );
+		return array(
+			"tables"=>array(
+				'news_item', 
+				'news_grp', 
+				'news_ctg', 
+				'news_opt', 
+				'news_usr'
+			),
+			"css"=>array(
+				'news.css'
+			),
+			"folderStructure"=>array (
+				CONTENT_DIR.OS.'news'=> array(
+					'img' => null,
+					'attached' => null
+				)
+	     		)
+		);
+
 	}
 
 	/**
@@ -521,28 +396,28 @@ class news extends AbstractEvtClass{
 		$this->accessGroup('');
 
 		/*
-		 * delete records and translations from table news
+		 * delete records and translations from table news_item
 		 */
-		$query = "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance'";
+		$query = "SELECT id FROM ".newsItem::$tbl_item." WHERE instance='$this->_instance'";
 		$a = $this->_db->selectquery($query);
 		if(sizeof($a)>0) 
 			foreach($a as $b) 
-				language::deleteTranslations($this->_tbl_news, $b['id']);
+				language::deleteTranslations(newsItem::$tbl_item, $b['id']);
 		
-		$query = "DELETE FROM ".$this->_tbl_news." WHERE instance='$this->_instance'";	
+		$query = "DELETE FROM ".newsItem::$tbl_item." WHERE instance='$this->_instance'";	
 		$result = $this->_db->actionquery($query);
 		
 		/*
 		 * delete record and translations from table news_ctg
 		 */
-		$query = "SELECT id FROM ".$this->_tbl_ctg." WHERE instance='$this->_instance'";
+		$query = "SELECT id FROM ".newsCtg::$tbl_ctg." WHERE instance='$this->_instance'";
 		$a = $this->_db->selectquery($query);
 		if(sizeof($a)>0) {
 			foreach($a as $b) {
-				language::deleteTranslations($this->_tbl_ctg, $b['id']);
+				language::deleteTranslations(newsCtg::$tbl_ctg, $b['id']);
 			}
 		}
-		$query = "DELETE FROM ".$this->_tbl_ctg." WHERE instance='$this->_instance'";	
+		$query = "DELETE FROM ".newsCtg::$tbl_ctg." WHERE instance='$this->_instance'";	
 		$result = $this->_db->actionquery($query);
 
 		/*
@@ -579,11 +454,10 @@ class news extends AbstractEvtClass{
 	}
 
 	/**
-	 * Setter per le proprietà group 
-	 * 
-	 * Definizione dei gruppi che gestiscono l'accesso alle funzionalità amministrative
+	 * Setter per le proprietà group
 	 *
-	 * @access private
+	 * Definizione dei gruppi che gestiscono l'accesso alle funzionalità amministrative e non
+	 *
 	 * @return void
 	 */
 	private function setGroups(){
@@ -598,7 +472,7 @@ class news extends AbstractEvtClass{
 		$this->_group_3 = array($this->_list_group[0], $this->_list_group[1], $this->_list_group[2], $this->_list_group[3]);
 
 	}
-	
+
 	/**
 	 * Definizione dei metodi pubblici che forniscono un output per il front-end 
 	 * 
@@ -612,1198 +486,772 @@ class news extends AbstractEvtClass{
 	public static function outputFunctions() {
 
 		$list = array(
-			"blockList" => array("label"=>_("Lista utime news"), "role"=>'1'),
-			"viewList" => array("label"=>_("Lista news paginata"), "role"=>'1'),
+			"last" => array("label"=>_("Lista utime news"), "role"=>'1'),
+			"archive" => array("label"=>_("Lista news paginata"), "role"=>'1'),
 			"showcase" => array("label"=>_("Vetrina"), "role"=>'1')
 		);
 
 		return $list;
 	}
-	
+
 	/**
-	 * Getter del numero di news presentate per pagina 
+	 * Percorso assoluto alla cartella dei contenuti 
 	 * 
-	 * @access private
-	 * @return int
+	 * @param string $type tipologia di media (img, attached)
+	 * @return percorso assoluto
 	 */
-	private function getNewsForPage() {
-		return $this->_news_for_page;
+	public function getBaseAbsPath($type) {
+
+		return $this->_data_dir.OS.$type;
+
 	}
-	
+
 	/**
-	 * Setter del numero di news presentate per pagina 
+	 * Percorso relativo alla cartella dei contenuti 
 	 * 
-	 * @param int $req_var numero di news per pagina
-	 * @access private
-	 * @return void
+	 * @param string $type tipologia di media (img, attached)
+	 * @return percorso relativo
 	 */
-	private function setNewsForPage($req_var) {
-	
-		if($req_var) $this->_news_for_page = $req_var;
+	public function getBasePath($type) {
+
+		return $this->_data_www.'/'.$type;
+
 	}
-	
+
 	/**
-	 * Getter del numero di news presentate nella vista "ultime news" 
+	 * Getter larghezza di ridimensionamenteo delle immagini 
 	 * 
-	 * @access private
-	 * @return int
+	 * @access public
+	 * @return largheza di ridimensionamento
 	 */
-	private function getNewsHomePage() {
-		return $this->_news_homepage;
+	public function getImageWidth() {
+
+		return $this->_image_width;
+
 	}
-	
+
 	/**
-	 * Setter del numero di news presentate nella vista "ultime news" 
+	 * Getter larghezza di ridimensionamenteo delle thumb 
 	 * 
-	 * @param int $req_var numero di news nella vista "ultime news"
-	 * @access private
-	 * @return void
+	 * @access public
+	 * @return largheza di ridimensionamento
 	 */
-	private function setNewsHomePage($req_var) {
-	
-		if($req_var) $this->_news_homepage = $req_var;
+	public function getThumbWidth() {
+
+		return $this->_thumb_width;
+
 	}
-	
+
 	/**
-	 * Esegue il download clientside del documento indicato da url ($doc_id) 
-	 * 
+	 * Esegue il download clientside del documento indicato da url ($doc_id)
+	 *
 	 * @access public
 	 * @return stream
 	 */
-	public function downloader(){
-		
+	public function download() {
+
 		$doc_id = cleanVar($_GET, 'id', 'int', '');
-		
-		if(!empty($doc_id))
-		{
-			$query = "SELECT filename FROM ".$this->_tbl_news." WHERE id='$doc_id'";
-			$a = $this->_db->selectquery($query);
-			if(sizeof($a) > 0)
-			{
-				foreach($a AS $b)
-				{
-					$filename = htmlChars($b['filename']);
-					$full_path = $this->_data_dir.$this->_os.$filename;
-					
-					download($full_path);
-					exit();
-				}
+
+		if(!empty($doc_id)) {
+			$n = new newsItem($doc_id, $this);
+			if(!$n->id) {
+				error::raise404();
 			}
-			else exit();
-		}
-		else exit();
-	}
-	
-	/**
-	 * Metodo di output "ultime news" 
-	 * 
-	 * Presenta una lista delle ultime news pubblicate. Molti parametri di configurazione sono gestibili dalle opzioni.
-	 *
-	 * @access public
-	 * @return string
-	 */
-	public function blockList(){
-
-		$this->accessType($this->_access_base);
-
-		$htmlsection = new htmlSection(array('id'=>"news_".$this->_instanceName,'class'=>'public', 'headerTag'=>'header', 'headerLabel'=>$this->_title_last));
-
-		if($this->_feed_rss)
-			$htmlsection->headerLinks = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>";
-
-		$registry = registry::instance();
-		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
-		
-		$GINO = '';
-		
-		$limit = $this->_db->limit($this->_news_homepage, 0);
-		$query = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
-			? "SELECT id, ctg, img, filename, ".$this->_field_date.", private, social, published FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' ORDER BY date DESC $limit"
-			: "SELECT id, ctg, img, filename, ".$this->_field_date.", private, social, published FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' AND private='no' ORDER BY date DESC $limit";
-		$a = $this->_db->selectquery($query);
-		if(sizeof($a) > 0)
-		{
-			foreach($a AS $b)
-			{
-				$GINO .= $this->displayNews($b);
-			}
-			
-			$htmlsection->footer = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'viewList')."\">"._("elenco completo")."</a>\n";
-		}
-		else $GINO .= "<p class=\"message\">"._("Non risultano news pubblicate")."</p>";
-		
-		$htmlsection->content = $GINO;
-
-		return $htmlsection->render();
-	}
-	
-	/**
-	 * Taglia il testo della news ad un numero preciso di caratteri (gestibile da opzioni) 
-	 * 
-	 * @param string $text il testo completo della news
-	 * @access private
-	 * @return string
-	 */
-	private function printSummary($text) {
-		
-		$ending = "... ";
-			
-		$summary = cutHtmlText($text, $this->_news_char, $ending, false, false, true, array("endingPosition"=>"in"));
-		
-		return $summary;
-	}
-	
-	/**
-	 * Restituisce la vista di una singola news espansa o collassata
-	 *
-	 * Molti aspetti di visualizzazione sono configurabili da opzioni.
-	 * Contiene il controllo dei privilegi di accesso al contenuto richiesto.  
-	 * La news viene presentata collassata o espansa a seconda del  valore del parametro url "full".  
-	 * 
-	 * @param mixed $data l'id della news da visualizzare o null se deve essere letto da url
-	 * @param bool $check_published controllo o meno della pubblicazione della news
-	 * @access public
-	 * @return string
-	 */
-	public function displayNews($data=null, $check_published=true) {
-
-		if(!$data || is_int($data)) {
-			$id = is_int($data) ? $data : cleanVar($_GET, 'id', 'int', '');
-			$query = "SELECT id, img, filename, date, private, ctg, social, published FROM ".$this->_tbl_news." WHERE id='$id'";
-			$a = $this->_db->selectquery($query);
-			if(sizeof($a)>0) $data = $a[0];
-			else return "";
-		}
-		$id = htmlChars($data['id']);
-		$private = htmlChars($data['private']);
-		$published = htmlChars($data['published']);
-		$social = htmlChars($data['social']);
-
-		if(!$published && $check_published) header("Location: $this->_home");
-		
-		if($private=='yes' && !$this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3))
-			exit(error::errorMessage(array('error'=>_("Permessi insufficienti per visualizzare i contenuti richiesti")), $this->_home));
-
-		$full = cleanVar($_GET, 'full', 'int', '');
-
-		if($full)
-			$htmlsection = new htmlSection(array('id'=>"news_".$this->_instanceName,'class'=>'public full'));
-		$ctg = htmlChars($data['ctg']);
-		$img = htmlChars($data['img']);
-		$filename = htmlChars($data['filename']);
-		$date = $this->shortDate($data['date']);
-		if($this->_win_layer==1)
-			$onclick_exp = "onclick=\"if(!window.myWin$id || !window.myWin$id.showing) {window.myWin$id = new layerWindow({'title':'"._("Dettagli")."', 'url':'$this->_home?pt[$this->_instanceName-view]&id=$id&layer=1', 'bodyId':'news_$id', 'width':$this->_win_width, 'height':".($this->_win_height ? $this->_win_height : 'null').", 'destroyOnClose':true, 'closeButtonUrl':'img/ico_close2.gif', 'disableObjects':true, reloadZindex:true});window.myWin$id.display();}\"";
-		elseif($this->_win_layer==2)
-			$onclick_exp = "onclick=\"if(\$chk(window.news$id) && window.news$id==1) {\$('n$id').set('html', $('cutNews$id').get('html'));window.news$id=0;}else{\$('n$id').set('html', $('fullNews$id').get('html'));window.news$id = 1;}\"";
-		else 
-			$onclick_exp = "onclick=\"location.href='".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id))."';\"";
-
-		$title = "<span class=\"link newsTitle\" $onclick_exp>".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id))."</span>";
-		$text = htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id));
-		if($filename) $text .= "<p><a href=\"".$this->_plink->aLink($this->_instanceName, 'downloader', array("id"=>$id))."\">$filename</a></p>";			
-		if($social=='yes') {
-			$text .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id)));
-		}
-
-		$textCut = $full ? $text : $this->printSummary($text);
-		
-		$htmlarticle = new htmlArticle(array('class'=>'public'));
-
-		if(!empty($img)) {
-			$GINO = '';
-			$img_view = $this->_data_www.'/'.$this->_prefix_thumb.$img;
-			$full_view = $this->_data_www.'/'.$this->_prefix_img.$img;
-			if($this->_news_img_lightbox && !$full && !$this->_img_expand) $GINO .= "<a href=\"$full_view\" rel=\"lightbox\">";
-			elseif($this->_img_expand) $GINO .= "<span class=\"link\" $onclick_exp>";
-			if($full)
-				$GINO .= "<img class=\"left\" style=\"margin:0 5px 0px 0\" src=\"$full_view\" alt=\""._("immagine news")."\" />\n";
-			else
-				$GINO .= "<img class=\"left\" style=\"margin:0 5px 0px 0\" src=\"$img_view\" alt=\""._("immagine news")."\" />\n";
-			if($this->_news_img_lightbox && !$full && !$this->_img_expand) $GINO .= "</a>";
-			elseif($this->_img_expand) $GINO .= "</span>";
-			$GINO .= "<div><span class=\"newsTitle\">$title</span></div>";
-			$GINO .= "<div id=\"n".$id."\">\n";
-			$GINO .= "$textCut\n";
-			$GINO .= "</div>\n";
-			$GINO .= "<div class=\"null\"></div>\n";
-		}
-		else {
-			$GINO = "<div><span class=\"newsTitle\">$title</span></div>";
-			$GINO .= "<div id=\"n".$id."\">$textCut</div>\n";
-		}
-		$GINO .= "<div id=\"fullNews$id\" style=\"display:none\">$text</div>";
-		$GINO .= "<div id=\"cutNews$id\" style=\"display:none\">$textCut</div>";
-		$GINO .= "<div class=\"newsSeparator\"></div>";
-
-		$htmlarticle->content = $GINO;
-
-		if($full) {
-			$htmlsection->content = $htmlarticle->render();
-			return $htmlsection->render();
-		}
-		else
-			return $htmlarticle->render();
-	}
-
-	/**
-	 * Metodo di output della singola news
-	 * 
-	 * @access public
-	 * @return string
-	 */
-	public function view() {
-
-		$id = cleanVar($_GET, 'id', 'int', '');
-		$layer = cleanVar($_GET, 'layer', 'int', '');
-		
-		// Registry
-		$reg_title = htmlChars(pub::variable('head_title'))." - ".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id, 'id'));
-		$reg_description = cutHtmlText(htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id, 'id')), $this->_news_char, '...', true, false, true);
-		$reg_image = $this->_db->getFieldFromId($this->_tbl_news, 'img', 'id', $id);
-		$reg_image_src = is_file($this->_data_dir.$this->_os.$this->_prefix_thumb.$reg_image) 
-		? $this->_url_root.$this->_data_www."/".$this->_prefix_thumb.$reg_image : null;
-		
-		$registry = registry::instance();
-		$registry->description = $reg_description;
-		$registry->addMeta(array('name'=>'title', 'content'=>$reg_title));
-		$registry->addHeadLink(array('rel'=>'image_src', 'href'=>$reg_image_src));
-		// End
-		
-		$GINO = '';
-		
-		$query = "SELECT id, ctg, img, filename, ".$this->_field_date.", social FROM ".$this->_tbl_news." WHERE id='$id' AND published='1'";
-		$a = $this->_db->selectquery($query);
-		if(sizeof($a) > 0)
-		{
-			foreach($a AS $b)
-			{
-				$id = htmlChars($b['id']);
-				$ctg = htmlChars($b['ctg']);
-				$img = htmlChars($b['img']);
-				$filename = htmlChars($b['filename']);
-				$social = htmlChars($b['social']);
-				$date = dbDatetimeToDate($b['date'], "/");
-				
-				$title = htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id));
-				$text = htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id));
-				
-				$ctgObj = new category($ctg, $this->_tbl_ctg, $this->_instance);
-
-				if($this->_view_ctg) 
-					$subtitle = _("Pubblicata il ").$date._(" nella categoria ")."<span class=\"newsCtg\"><a href=\"".$this->_plink->aLink($this->_instanceName, 'viewList', array("ctg"=>$ctgObj->id))."\">".htmlChars($ctgObj->name)."</a></span>";
-				else 
-					$subtitle = _("Pubblicata il ").$date;
-
-				$htmlsection = new htmlSection(array('class'=>'public', 'id'=>'view_news_'.$this->_instanceName, 'headerLabel'=>$title, 'subHeaderLabel'=>$subtitle));
-				
-				$link = $filename?"<p><a href=\"".$this->_plink->aLink($this->_instanceName, 'downloader', array("id"=>$id))."\">$filename</a></p>":"";
-
-				$buffer = '';
-				if(!empty($img))
-				{
-					$img_view = $this->_data_www.'/'.$this->_prefix_thumb.$img;
-					$full_view = $this->_data_www.'/'.$this->_prefix_img.$img;
-					if($this->_news_img_lightbox) $buffer .= "<a href=\"$full_view\" rel=\"lightbox\">";
-					$buffer .= "<img style=\"float:left;margin:0 5px 0px 0\" src=\"".($this->_news_img_lightbox ? $img_view : $full_view)."\" alt=\""._("immagine news")."\" />\n";
-					if($this->_news_img_lightbox) $buffer .= "</a>";
-					$buffer .= "<div><span class=\"newsTitle\" style=\"text-decoration:none;\">$title</span></div>";
-					$buffer .= $text.$link;
-					$buffer .= "<div class=\"null\"></div>\n";
-				}
-				else {
-					$buffer .= "<div><span class=\"newsTitle\" style=\"text-decoration:none;\">$title</span></div>";
-					$buffer .= $text.$link;
-				}
-				if($social=='yes' && !$layer) {
-					$buffer .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), $title);
-				}
-
-				$htmlsection->content = $buffer;
-				$GINO = $htmlsection->render();
-			}
-		}
-		else
-			header("Location $this->_home");
-
-		return $GINO;
-	}
-	
-	/**
-	 * Metodo di output "elenco news"
-	 * 
-	 * Restituisce l'elenco paginato di tutte le news pubblicate.
-	 * Include un form di ricerca se abilitato dalle opzioni.
-	 * 
-	 * @access public
-	 * @return string
-	 */
-	public function viewList(){
-	
-		$this->accessType($this->_access_base);
-		
-		$ctg = cleanVar($_REQUEST, 'ctg', 'int', '');
-
-		if($this->_search_form)
-		{
-			$where = '';
-			$date_search = '';
-			
-			$month = cleanVar($_REQUEST, 'month', 'string', '');
-			$year = cleanVar($_REQUEST, 'year', 'int', '');
-			
-			if(!empty($year))	$date_search .= "$year";
-			if(!empty($month)) $date_search .= "-$month-";
-			if($date_search) $where = "AND date LIKE '%$date_search%'";
-			if($ctg) $where .= " AND ctg='$ctg'";
-			
-			$search = $this->searchNews($month, $year, $ctg);
-			$link_search = "&month=$month&year=$year&ctg=$ctg";
-		}
-		else
-		{
-			$where = $ctg ? " AND ctg='$ctg'":"";
-			$search = ''; $link_search = '';
-		}
-
-		$registry = registry::instance();
-		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
-		
-		$htmlsection = new htmlSection(array('id'=>"news_".$this->_instanceName,'class'=>'public', 'headerTag'=>'header', 'headerLabel'=>$this->_title_page));
-		
-		if($this->_feed_rss)
-			$htmlsection->headerLinks = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>";
-		
-		$GINO = $search;
-		
-		$numberTotRecord = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
-			? "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' $where"
-			: "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' $where AND private='no'";
-		$this->_list = new PageList($this->_news_for_page, $numberTotRecord, 'query', array("permalink_primary"=>true));
-		
-		$limit = $this->_db->limit($this->_list->rangeNumber, $this->_list->start());
-		$query = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
-			? "SELECT id, ctg, img, filename, ".$this->_field_date.", social FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' $where ORDER BY date DESC $limit"
-			: "SELECT id, ctg, img, filename, ".$this->_field_date.", social FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND private='no' AND published='1' $where ORDER BY date DESC $limit";
-		$a = $this->_db->selectquery($query);
-		if(sizeof($a) > 0)
-		{
-			foreach($a AS $b)
-			{
-				$id = htmlChars($b['id']);
-				$ctg = htmlChars($b['ctg']);
-				$img = htmlChars($b['img']);
-				$filename = htmlChars($b['filename']);
-				$social = htmlChars($b['social']);
-				$date = dbDatetimeToDate($b['date'], "/");
-				
-				$title = htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id));
-				$text = htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id));
-				
-				$ctgObj = new category($ctg, $this->_tbl_ctg, $this->_instance);
-
-				if($this->_view_ctg) 
-					$title_art = "<span class=\"newsCtg\"><a href=\"".$this->_plink->aLink($this->_instanceName, 'viewList', array("ctg"=>$ctgObj->id))."\">".htmlChars($ctgObj->name)."</a></span>";
-				else 
-					$title_art = null;
-
-				$htmlarticle = new htmlArticle(array('class'=>'public', 'headerLabel'=>$title_art));
-				
-				$link = $filename?"<p><a href=\"".$this->_plink->aLink($this->_instanceName, 'downloader', array("id"=>$id))."\">$filename</a></p>":"";
-
-				$buffer = '';
-				if(!empty($img))
-				{
-					$img_view = $this->_data_www.'/'.$this->_prefix_thumb.$img;
-					$full_view = $this->_data_www.'/'.$this->_prefix_img.$img;
-					if($this->_news_img_lightbox) $buffer .= "<a href=\"$full_view\" rel=\"lightbox\">";
-					$buffer .= "<img style=\"float:left;margin:0 5px 0px 0\" src=\"$img_view\" alt=\""._("immagine news")."\" />\n";
-					if($this->_news_img_lightbox) $buffer .= "</a>";
-					$buffer .= "<div><span class=\"newsTitle\" style=\"text-decoration:none;\">$title</span><br/>";
-					$buffer .= "<span class=\"newsDate\">pubblicata il $date</span></div>";
-					$buffer .= $text.$link;
-					$buffer .= "<div class=\"null\"></div>\n";
-				}
-				else {
-					$buffer .= "<div><span class=\"newsTitle\" style=\"text-decoration:none;\">$title</span><br/>";
-					$buffer .= "<span class=\"newsDate\">pubblicata il $date</span></div>";
-					$buffer .= $text.$link;
-				}
-				if($social=='yes') {
-					$buffer .= shareAll("all", $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id)), htmlChars($title));
-				}
-
-				$buffer .= "<div class=\"newsSeparator\"></div>";
-
-				$htmlarticle->content = $buffer;
-				$GINO .= $htmlarticle->render();
+			if(!$this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3) && $n->private) {
+				error::raise404();
 			}
 
-			$htmlsection->footer = $this->_list->listReferenceGINO($this->_plink->aLink($this->_instanceName, 'viewList', $link_search, null, array("basename"=>false)));
+			$attached = $n->attached;
+			if($attached) {
+				$full_path = $this->getBaseAbsPath('attached').$this->_os.$attached;
+				download($full_path);
+			}
+			else {
+				error::raise404();
+			}
 		}
-		else
-		{
-			$GINO .= "<p>"._("non risultano news registrate.")."</p>";
-		}
-		
-		$htmlsection->content = $GINO;
 
-		return $htmlsection->render();
+		error::raise404();
 	}
-	
-	/**
-	 * Form di ricerca news 
-	 * 
-	 * Restituisce il form di ricerca news con indicazione della ricerca precedente. 
-	 * 
-	 * @param int $month mese ricercato
-	 * @param int $year anno ricercato
-	 * @param int $ctg id della categoria ricercata
-	 * @access private
-	 * @return string
-	 */
-	private function searchNews($month, $year, $ctg){
-		
-		$gform = new Form('gform', 'post', false);
-		$ctgObj = new category(null, $this->_tbl_ctg, $this->_instance);
 
-		$GINO = "<div style=\"margin-bottom:10px;\">\n";
-		$GINO .= "<form action=\"".$this->_plink->aLink($this->_instanceName, 'viewList')."\" method=\"post\">\n";
-		
-		$GINO .= "<table class=\"generic\" style=\"text-align:center;\">\n";
-		$GINO .= "<tr>\n";
-		$GINO .= "<th style=\"text-align:center;\">"._("Ricerca")."</th>\n";
-		$GINO .= "</tr>\n";
-		$GINO .= "<tr>\n";
-		$GINO .= "<td>\n";
-		if($this->_view_ctg) {
-			$GINO .= "<label for=\"ctg\"><b>"._("categoria")."</b></label>&nbsp;&nbsp;";
-			$GINO .= $gform->select('ctg', $ctg, $ctgObj->inputTreeArray("SELECT id FROM $this->_tbl_ctg WHERE id NOT IN (SELECT parent FROM $this->_tbl_ctg)"), array()); 
-		}
-		$GINO .= "<label for=\"month\"><b>"._("mese")."</b></label>&nbsp;&nbsp;";
-		$GINO .= "<select name=\"month\">\n";
-		$GINO .= "<option></option>\n";
-		for($i=1;$i<13;$i++)
-		{
-			$m = ($i<10)?"0".$i:$i;
-			$GINO .= ($m==$month)?"<option selected=\"selected\">":"<option>";
-			$GINO .= $m;
-			$GINO .= "</option>";
-		}
-		$GINO .= "</select>\n";
-		
-		$GINO .= "<label for=\"year\"><b>"._("anno")."</b></label>&nbsp;&nbsp;";
-		$begin_year = 2007;
-		$last_year = date('Y');
-		$GINO .= "<select name=\"year\">\n";
-		$GINO .= "<option></option>\n";
-		for($i=$begin_year;$i<$last_year+1;$i++) {
-			$GINO .= ($i==$year)?"<option selected=\"selected\">":"<option>";
-			$GINO .= "$i</option>";
-		}
-		$GINO .= "</select>&nbsp;&nbsp;\n";
-		
-		$GINO .= "<input type=\"submit\"name=\"submit_insert\" class=\"submit\" value=\""._("cerca")."\" />";
-		
-		$GINO .= "</td>\n";
-		$GINO .= "</tr>\n";
-		$GINO .= "</table>\n";
-		$GINO .= "</form>\n";
-		$GINO .= "</div>\n";
-		
-		return $GINO;
-	}
-	
 	/**
-	 * Vetrina ultime news solo testuale, con 'pallini' per selezionare la news da mostrare 
+	 * Front end vetrina news 
 	 * 
 	 * @access public
-	 * @return string
+	 * @return vetrina ultime news
 	 */
 	public function showcase() {
 		
-		$this->accessType($this->_access_base);
+		$this->setAccess($this->_access_base);
 
-		$htmlsection = new htmlSection(array('id'=>"showcase_news_".$this->_instanceName,'class'=>'public', 'headerTag'=>'header', 'headerLabel'=>$this->_title_showcase));
+		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)) {
+			$private = true;
+		}
+		else {
+			$private = false;
+		}
 
 		$registry = registry::instance();
 		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
 		$registry->addJs($this->_class_www."/news.js");
-		
-		$buffer = '';
-		
-		$limit = $this->_db->limit($this->_news_showcase, 0);
-		$query = $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)
-			? "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' ORDER BY date DESC $limit"
-			: "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' AND published='1' AND private='no' ORDER BY date DESC $limit";
-		$a = $this->_db->selectquery($query);
+
+		$news = newsItem::get($this, array('private'=>$private, 'order'=>'date DESC, insertion_date DESC', 'limit'=>array(0, $this->_showcase_news_number)));
+
+		preg_match_all("#{{[^}]+}}#", $this->_showcase_news_code, $matches);
+		$items = array();
+		$ctrls = array();
+		$indexes = array();
 		$i = 0;
-		$tot = count($a);
-		if($tot > 0) {
-			$ctrl = '';
-			$buffer .= "<div id=\"showcase_items_news_".$this->_instanceName."\">"; 
-			foreach($a as $b) {
-				$id = $b['id'];
-				$class = !$i ? ' active' : '';
-				$buffer .= "<div class='showcase_item".$class."' style='display: block;z-index:".($tot-$i)."' id=\"news_$i\">";
-				$title = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'displayNews', array("id"=>$id))."\">".htmlChars($this->_trd->selectTXT($this->_tbl_news, 'title', $id))."</a>";
-				$text = cutHtmlText(htmlChars($this->_trd->selectTXT($this->_tbl_news, 'text', $id, 'id')), $this->_news_char, '...', true, false, true);
-				$buffer .= "<h2>$title</h2>";
-				$buffer .= $text;
-				$buffer .= "</div>";
-
-				$onclick = "changeShowcaseNews($i)";
-				$ctrl .= "<td><div id=\"sym_".$i."\" class=\"scase_sym".($class==' active' ? " on" : '')."\" onclick=\"$onclick\"></div></td>";
-
-				$i++;
-			}
+		$tot = count($news);
+		foreach($news as $n) {
+			$indexes[] = $i;
+			$buffer = "<div class='showcase_item' style='display: block;z-index:".($tot-$i)."' id=\"news_$i\">";
+			$buffer .= $this->parseTemplate($n, $this->_showcase_news_code, $matches);
 			$buffer .= "</div>";
-			
-			$buffer .= "<div class=\"showcase_ctrl\">";
-			$buffer .= "<table>";
-			$buffer .= "<tr>";
-			$buffer .= $ctrl;
-			$buffer .= "</tr>";
-			$buffer .= "</table>";
-			$buffer .= "</div>";
+			$items[] = $buffer;
+
+			$onclick = "newslider.set($i)";
+			$ctrls[] = "<div id=\"sym_".$this->_instance.'_'.$i."\" class=\"scase_sym\" onclick=\"$onclick\"><span></span></div>";
+			$i++;
 		}
 
-		$htmlsection->content = $buffer;
+		$options = '{}';
+		if($this->_showcase_auto_start) {
+			$options = "{auto_start: true, auto_interval: ".$this->_showcase_auto_interval."}";
+		}
 
-		return $htmlsection->render();
+		$view = new view($this->_view_dir);
+
+		$view->setViewTpl('showcase');
+		$view->assign('section_id', 'showcase_news_'.$this->_instanceName);
+		$view->assign('wrapper_id', 'showcase_items_news_'.$this->_instanceName);
+		$view->assign('ctrl_begin', 'sym_'.$this->_instance.'_');
+		$view->assign('title', $this->_title_showcase);
+		$view->assign('feed', "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>");
+		$view->assign('items', $items);
+		$view->assign('ctrls', $ctrls);
+		$view->assign('options', $options);
+
+		return $view->render();
 	}
 
 	/**
-	 * Entry point per il backoffice 
-	 * 
-	 * Questo metodo fa da wrapper per tutte le funzionalità amministrative.
+	 * Front end ultime news 
 	 * 
 	 * @access public
-	 * @return string
+	 * @return lista ultime news
 	 */
-	public function manageDoc(){
+	public function last() {
 
+		$this->setAccess($this->_access_base);
+
+		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)) {
+			$private = true;
+		}
+		else {
+			$private = false;
+		}
+
+		$title_site = pub::variable('head_title');
+		$title = $title_site.($this->_title_list ? " - ".$this->_title_list : "");
+
+		$registry = registry::instance();
+		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
+		$registry->addHeadLink(array(
+			'rel' => 'alternate',
+			'type' => 'application/rss+xml',
+			'title' => jsVar($title),
+			'href' => $this->_url_root.SITE_WWW.'/'.$this->_plink->aLink($this->_instanceName, 'feedRSS') 	
+		));
+
+		$news = newsItem::get($this, array('private'=>$private, 'order'=>'date DESC, insertion_date DESC', 'limit'=>array(0, $this->_last_news_number)));
+
+		preg_match_all("#{{[^}]+}}#", $this->_last_news_code, $matches);
+		$items = array();
+		foreach($news as $n) {
+			$items[] = $this->parseTemplate($n, $this->_last_news_code, $matches);
+		}
+
+		$archive = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'archive')."\">"._('elenco completo')."</a>";
+
+		$view = new view($this->_view_dir);
+
+		$view->setViewTpl('last');
+		$view->assign('section_id', 'last_news_'.$this->_instanceName);
+		$view->assign('title', $this->_title_last);
+		$view->assign('feed', "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>");
+		$view->assign('items', $items);
+		$view->assign('archive', $archive);
+
+		return $view->render();
+
+	}
+
+	/**
+	 * Front end dettagli news 
+	 * 
+	 * @access public
+	 * @return dettagli news
+	 */
+	public function detail() {
+
+		$slug = cleanVar($_GET, 'id', 'string', '');
+
+		$item = newsItem::getFromSlug($slug, $this);
+
+		if(!$item || !$item->id || !$item->published || ($item->private && !$this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3))) {
+			error::raise404();
+		}
+
+		$registry = registry::instance();
+		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
+
+		preg_match_all("#{{[^}]+}}#", $this->_detail_news_code, $matches);
+		$tpl = $this->parseTemplate($item, $this->_detail_news_code, $matches);
+
+		$view = new view($this->_view_dir);
+
+		$view->setViewTpl('detail');
+		$view->assign('section_id', 'detail_news_'.$this->_instanceName);
+		$view->assign('tpl', $tpl);
+
+		return $view->render();
+
+	}
+
+	/**
+	 * Front end archivio news 
+	 * 
+	 * @access public
+	 * @return lista ultime news
+	 */
+	public function archive() {
+
+		$this->setAccess($this->_access_base);
+
+		$registry = registry::instance();
+		$registry->addCss($this->_class_www."/news_".$this->_instanceName.".css");
+
+		$ctgslug = cleanVar($_GET, 'ctg', 'string', '');
+
+		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)) {
+			$private = true;
+		}
+		else {
+			$private = false;
+		}
+
+		if($ctgslug) {
+			$ctg = newsCtg::getFromSlug($ctgslug, $this);
+			$ctg_id = $ctg ? $ctg->id : 0;
+		}
+		else {
+			$ctg_id = 0;
+		}
+
+		$news_number = newsItem::getCount($this, array('private'=>$private, 'ctg'=>$ctg_id));
+
+		$pagination = new pagelist($this->_list_nfp, $news_number, 'array');
+		$limit = array($pagination->start(), $this->_list_nfp);
+
+		$news = newsItem::get($this, array('private'=>$private, 'ctg'=>$ctg_id, 'order'=>'date DESC, insertion_date DESC', 'limit'=>$limit));
+
+		preg_match_all("#{{[^}]+}}#", $this->_list_news_code, $matches);
+		$items = array();
+		foreach($news as $n) {
+			$items[] = $this->parseTemplate($n, $this->_list_news_code, $matches);
+		}
+
+		$view = new view($this->_view_dir);
+		$view->setViewTpl('archive');
+		$view->assign('section_id', 'archive_news_'.$this->_instanceName);
+		$view->assign('title', $this->_title_list.($ctg_id ? ' '.htmlChars($ctg->ml('name')) : ''));
+		$view->assign('feed', "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>");
+		$view->assign('items', $items);
+		$view->assign('pagination_summary', $pagination->reassumedPrint());
+		$view->assign('pagination_navigation', $pagination->listReferenceGINO($this->_plink->aLink($this->_instanceName, 'archive', '', ($ctg_id ? 'ctg='.$ctgslug : ''), array("basename"=>false))));
+
+		return $view->render();
+
+	}
+
+	/**
+	 * Parserizzazione dei template inseriti da opzioni 
+	 * 
+	 * @param newsItem $item istanza di newsItem
+	 * @param string $tpl codice del template 
+	 * @param array $matches matches delle variabili da sostituire
+	 * @return template parserizzato
+	 */
+	private function parseTemplate($item, $tpl, $matches) {
+
+		if(isset($matches[0])) {
+			foreach($matches[0] as $m) {
+				$code = trim(preg_replace("#{|}#", "", $m));
+				if($pos = strrpos($code, '|')) {
+					$property = substr($code, 0, $pos);
+					$filter = substr($code, $pos + 1);
+				}
+				else {
+					$property = $code;
+					$filter = null;
+				}
+
+				$replace = $this->replaceTplVar($property, $filter, $item);
+				$tpl = preg_replace("#".preg_quote($m)."#", $replace, $tpl);
+			} 
+		}
+
+		return $tpl;
+	}
+
+	/**
+	 * Replace di una proprietà di newsItem all'interno del template 
+	 * 
+	 * @param string $property proprietà da sostituire
+	 * @param string $filter filtro applicato
+	 * @param newsItem $obj istanza di newsItem
+	 * @return replace del parametro proprietà
+	 */
+	private function replaceTplVar($property, $filter, $obj) {
+
+		$pre_filter = '';
+
+		if($property == 'thumb') {
+			if($obj->img) {
+				$pre_filter = "<img src=\"".$obj->thumbPath($this)."\" alt=\"thumb: ".jsVar($obj->ml('title'))."\" />";	
+			}
+			else return '';
+		}
+    elseif($property == 'thumb_path') {
+			if($obj->img) {
+				$pre_filter = $obj->thumbPath($this);
+			}
+			else return '';
+		}
+		elseif($property == 'img') {
+			if($obj->img) {
+				$pre_filter = "<img src=\"".$obj->imgPath($this)."\" alt=\"img: ".jsVar($obj->ml('title'))."\" />";	
+			}
+			else return '';
+		}
+		elseif($property == 'img_path') {
+			if($obj->img) {
+				$pre_filter = $obj->imgPath($this);
+			}
+			else return '';
+		}
+		elseif($property == 'url') {
+			$pre_filter = $this->_plink->aLink($this->_instanceName, 'detail', array('id'=>$obj->slug));	
+		}
+
+		elseif($property == 'date') {
+			$pre_filter = date('d/m/Y', strtotime($obj->{$property}));
+		}
+		elseif($property == 'text' || $property == 'title') {
+			$pre_filter = htmlChars($obj->ml($property));
+		}
+		elseif($property == 'attached') {
+			if($obj->attached) {
+				$pre_filter = "<a class=\"attached\" href=\"".$this->_plink->aLink($this->_instanceName, 'download', array('id'=>$obj->id))."\">".$obj->attached."</a>";
+			}
+		}
+		elseif($property == 'social') {
+			if($obj->social) {
+				$pre_filter = shareAll('all', $this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'detail', array('id'=>$obj->slug)), htmlChars($obj->ml('title')));
+			}
+			else {
+				return '';
+			}
+		}
+		elseif($property == 'feed') {
+			$pre_filter = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'feedRSS')."\">".pub::icon('feed')."</a>";
+		}
+		elseif($property == 'categories') {
+			$ctgs = $obj->categories($this);
+			$categories = array();
+			if(count($ctgs)) {
+				foreach($ctgs as $ctg) {
+					$categories[] = "<a href=\"".$this->_plink->aLink($this->_instanceName, 'archive', array('ctg'=>$ctg->slug))."\">".$ctg->ml('name')."</a>";	
+				}
+			}
+			$pre_filter = implode(", ", $categories);
+		}
+    elseif($property == 'categories_images') {
+			$ctgs = $obj->categories($this);
+			$images = array();
+			if(count($ctgs)) {
+				foreach($ctgs as $ctg) {
+					if($ctg->image) {
+                        $images[] = "<img src=\"".$ctg->imagePath($this)."\" alt=\"".$ctg->ml('name')."\" />";	
+                    }
+				}
+			}
+			$pre_filter = implode(", ", $images);
+		}
+		else {
+			return '';
+		}
+
+		if(is_null($filter)) {
+			return $pre_filter;
+		}
+
+		if($filter == 'link') {
+			return "<a href=\"".$this->_plink->aLink($this->_instanceName, 'detail', array('id'=>$obj->slug))."\">".$pre_filter."</a>";
+		}
+		elseif(preg_match("#layer:(\d+)x(\d+)#", $filter, $matches)) {
+			$width = $matches[1];
+			$height = $matches[2];
+			$onclick = "onclick=\"if(!window.myWin".$obj->id." || !window.myWin".$obj->id.".showing) {window.myWin".$obj->id." = new layerWindow({'title':'"._("Dettagli")."', 'url':'$this->_home?pt[$this->_instanceName-detail]&id=".$obj->slug."&layer=1', 'bodyId':'news_".$obj->id."', 'width':$width, 'height':".($height ? $height : 'null').", 'destroyOnClose':true, 'closeButtonUrl':'img/ico_close2.gif', 'disableObjects':true, reloadZindex:true});window.myWin".$obj->id.".display();}\"";
+			return "<span class=\"link\" $onclick>".$pre_filter."</span>";
+		}
+		elseif(preg_match("#chars:(\d+)#", $filter, $matches)) {
+			return cutHtmlText($pre_filter, $matches[1], '...', false, false, true, array('endingPosition'=>'in'));
+		}
+		elseif(preg_match("#class:(.+)#", $filter, $matches)) {
+			if(isset($matches[1]) && ($property == 'thumb' || $property == 'img')) {
+				return preg_replace("#<img#", "<img class=\"".$matches[1]."\"", $pre_filter);
+			}
+			else return $pre_filter;
+		}
+		elseif(preg_match("#style:\"(.+)\"#", $filter, $matches)) {
+			if(isset($matches[1]) && ($property == 'thumb' || $property == 'img')) {
+				return preg_replace("#<img#", "<img style=\"".$matches[1]."\"", $pre_filter);
+			}
+			else return $pre_filter;
+		}
+		else {
+			return $pre_filter;
+		}
+
+	}
+
+
+	/**
+	 * Interfaccia di amministrazione del modulo 
+	 * 
+	 * @return interfaccia di back office
+	 */
+	public function manageDoc() {
+		
 		$this->accessGroup('ALL');
 
+		$method = 'manageDoc';
+
 		$htmltab = new htmlTab(array("linkPosition"=>'right', "title"=>$this->_instanceLabel));	
-		$link_admin = "<a href=\"".$this->_home."?evt[$this->_instanceName-manageDoc]&block=permissions\">"._("Permessi")."</a>";
-		$link_css = "<a href=\"".$this->_home."?evt[$this->_instanceName-manageDoc]&block=css\">"._("CSS")."</a>";
-		$link_options = "<a href=\"".$this->_home."?evt[$this->_instanceName-manageDoc]&block=options\">"._("Opzioni")."</a>";
-		$link_ctg = "<a href=\"".$this->_home."?evt[".$this->_instanceName."-manageDoc]&block=ctg\">"._("Categorie")."</a>";
-		$link_dft = "<a href=\"".$this->_home."?evt[".$this->_instanceName."-manageDoc]\">"._("Contenuti")."</a>";
+		$link_admin = "<a href=\"".$this->_home."?evt[$this->_instanceName-$method]&block=permissions\">"._("Permessi")."</a>";
+		$link_css = "<a href=\"".$this->_home."?evt[$this->_instanceName-$method]&block=css\">"._("CSS")."</a>";
+		$link_options = "<a href=\"".$this->_home."?evt[$this->_instanceName-$method]&block=options\">"._("Opzioni")."</a>";
+		$link_ctg = "<a href=\"".$this->_home."?evt[$this->_instanceName-$method]&block=ctg\">"._("Categorie")."</a>";
+		$link_dft = "<a href=\"".$this->_home."?evt[".$this->_instanceName."-$method]\">"._("Contenuti")."</a>";
+
 		$sel_link = $link_dft;
 
 		// Variables
 		$id = cleanVar($_GET, 'id', 'int', '');
-		$ctg_id = cleanVar($_GET, 'ctg_id', 'int', '');
 		$start = cleanVar($_GET, 'start', 'int', '');
 		// end
 
 		if($this->_block == 'css') {
-			$GINO = sysfunc::manageCss($this->_instance, $this->_className);		
+			$buffer = sysfunc::manageCss($this->_instance, $this->_className);		
 			$sel_link = $link_css;
 		}
 		elseif($this->_block == 'permissions' && $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, '', '')) {
-			$GINO = sysfunc::managePermissions($this->_instance, $this->_className);		
+			$buffer = sysfunc::managePermissions($this->_instance, $this->_className);		
 			$sel_link = $link_admin;
 		}
-		elseif($this->_block == 'options') {
-			$GINO = sysfunc::manageOptions($this->_instance, $this->_className);		
+		elseif($this->_block == 'options' && $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, '', '')) {
+			$buffer = sysfunc::manageOptions($this->_instance, $this->_className);		
 			$sel_link = $link_options;
 		}
-		elseif($this->_block == 'ctg') {
-			$GINO = $this->manageCtg($ctg_id);	
+		elseif($this->_block == 'ctg' && $this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_2)) {
+			$buffer = $this->manageCategory();		
 			$sel_link = $link_ctg;
 		}
 		else {
-			$GINO = $this->manageItem($id);
+			$buffer = $this->manageNews();
 		}
 
-		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, '', '')) $links_array = array($link_admin, $link_css, $link_options, $link_ctg, $link_dft);
-		elseif($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1)) $links_array = array($link_css, $link_options, $link_ctg, $link_dft);
-		else $links_array = array($link_ctg, $link_dft);
+		// groups privileges
+		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, '', '')) {
+			$links_array = array($link_admin, $link_css, $link_options, $link_ctg, $link_dft);
+		}
+		elseif($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_2)) {
+			$links_array = array($link_ctg, $link_dft);
+		}
+		else $links_array = array($link_dft);
 
 		$htmltab->navigationLinks = $links_array;
 		$htmltab->selectedLink = $sel_link;
-		$htmltab->htmlContent = $GINO;
+		$htmltab->htmlContent = $buffer;
+
 		return $htmltab->render();
 	}
-	
-	/**
-	 * Gestione amministrativa dei contenuti delle news 
-	 * 
-	 * @param mixed $id 
-	 * @access private
-	 * @return string
-	 */
-	private function manageItem($id) {
-		
-		$start = cleanVar($_POST, 'start', 'string', '');
-
-		if($this->_action == $this->_act_modify OR $this->_action == $this->_act_insert)
-			$GINO = $this->formNews($id, $start);
-		elseif($this->_action == $this->_act_view) { echo $this->displayNews(null, false); exit(); }
-		else $GINO = $this->listNews();
-
-
-		return $GINO;
-
-	}
 
 	/**
-	 * Gestione amministrativa delle categorie 
+	 * Interfaccia di amministrazione delle categorie 
 	 * 
-	 * @param mixed $ctg_id id della categoria 
-	 * @access private
-	 * @return string
+	 * @return interfaccia di back office
 	 */
-	private function manageCtg($ctg_id) {
-	
-		$ctg = new category($ctg_id, $this->_tbl_ctg, $this->_instance);
+	private function manageCategory() {
 
-		if($this->_action == $this->_act_insert) {
-			$newctg = new category(null, $this->_tbl_ctg, $this->_instance);
-			$form = $newctg->formCtg($this->_home."?evt[$this->_instanceName-actionCtg]", array("title"=>_("Nuova categoria"), "parent"=>$ctg->id));
-		}
-		elseif($this->_action == $this->_act_modify)
-			$form = $ctg->formCtg($this->_home."?evt[$this->_instanceName-actionCtg]");
-		elseif($this->_action == $this->_act_delete)
-			$form = $ctg->formDelCtg($this->_home."?evt[$this->_instanceName-actionDelCtg]", array("more_info"=>_("L'eliminazione delle categorie <b>NON</b> comporta l'eliminazione delle news contenute.")));
-		else
-			$form = $this->infoCtg();
+		$registry = registry::instance();
+		$registry->addJs($this->_class_www.'/news.js');
 
-		$GINO = "<div class=\"vertical_1\">\n";
-		$GINO .= $this->listCategories($ctg_id);
-		$GINO .= "</div>\n";
+		$admin_table = new adminTable($this, array());
 
-		$GINO .= "<div class=\"vertical_2\">\n";
-		$GINO .= $form;
-		$GINO .= "</div>\n";
+    $edit = cleanVar($_GET, 'edit', 'int', '');
 
-		$GINO .= "<div class=\"null\"></div>";
+    $name_onblur = !$edit 
+      ? "onblur=\"$('slug').value = $(this).value.slugify()\""
+      : '';
 
-		return $GINO;
-
-	}
-
-	/**
-	 * Stampa le informazioni sulla categorizzazione delle news 
-	 * 
-	 * @access private
-	 * @return string
-	 */
-	private function infoCtg(){
-
-		$htmlsection = new htmlSection(array('class'=>'admin', 'headerTag'=>'h1', 'headerLabel'=>_("Informazioni")));
-		$buffer = "<p>"._("Le news possono disporre di una categorizzazione ad albero infinito. Una nuova news può essere associata solamente ad una categoria di tipo <b>foglia</b> (<span class=\"link tooltipfull\" title=\"Categoria di tipo foglia::Si tratta di una categoria che non ha altre categorie sotto di se.\">?</span>)")."</p>\n";
-		$buffer .= "<p>"._("Nel caso in cui una categoria foglia cessi di esserlo è opportuno modificare l'associazione delle news con questa categoria di modo che le nuovi associazioni siano verso categorie di tipo foglia.")."</p>";
-		
-		$htmlsection->content = $buffer;
-
-		return $htmlsection->render();
-	}
-
-	/**
-	 * Elenco amministrativo delle categorie 
-	 * 
-	 * @param mixed $ctg_id id della categoria selezionata
-	 * @access private
-	 * @return string
-	 */
-	private function listCategories($ctg_id) {
-
-		$link_insert = "<a href=\"$this->_home?evt[$this->_instanceName-manageDoc]&block=ctg&action=$this->_act_insert\">".pub::icon('insert', _("nuova categoria"))."</a>";
-		$htmlsection = new htmlSection(array('class'=>'admin', 'headerTag'=>'header', 'headerLabel'=>_("Categorie"), 'headerLinks'=>$link_insert));
-
-		$ctg = new category($ctg_id, $this->_tbl_ctg, $this->_instance);	
-
-		$GINO = $ctg->printTree(0, $this->_home."?evt[$this->_instanceName-manageDoc]&block=ctg&", array("view"=>false));
-		
-		$htmlsection->content = $GINO;
-		
-		return $htmlsection->render();
-	}
-
-	/**
-	 * Elenco amministrativo delle news registrate 
-	 * 
-	 * @access private
-	 * @return string
-	 */
-	private function listNews() {
-	
-		$gform = new Form('gform', 'post', true);
-
-		$filterCtg = cleanVar($_GET, 'filterCtg', 'int', '');
-		$order = cleanVar($_GET, 'order', 'string', '');
-		if(!$order || $order=='date') $order = 'date DESC';
-
-		$ctgObj = new category(null, $this->_tbl_ctg, $this->_instance);
-		$gform = new Form('gform', 'post', true);
-
-		$onchange = "onchange=\"location.href='$this->_home?evt[$this->_instanceName-manageDoc]&filterCtg='+$(this).value\"";
-		$filter = $gform->select('filterCtg', $filterCtg, $ctgObj->selectParentArray(), 
-			array("noFirst"=>true, "firstValue"=>"", "firstVoice"=>_("tutte le categorie"), "js"=>$onchange));
-		$link_insert = "<a href=\"$this->_home?evt[$this->_instanceName-manageDoc]&action=$this->_act_insert\">".pub::icon('insert')."</a>";
-		$htmlsection = new htmlSection(array('class'=>'admin', 'headerTag'=>'header', 'headerLabel'=>_("Elenco"), 'headerLinks'=>array($filter, $link_insert)));
-
-		if($filterCtg) {
-			$where_f = array("ctg='$filterCtg'");
-			$fCtg = new category($filterCtg, $this->_tbl_ctg, $this->_instance);
-			foreach($fCtg->getChildren() as $k=>$v) {
-				$where_f[] = "ctg='$k'";
-			}
-			$where_f = " AND (".implode(" OR ", $where_f).")";
-		}
-		else $where_f = '';
-
-		$link_insert = "<a href=\"$this->_home?evt[$this->_instanceName-manageDoc]&action=$this->_act_insert\">".pub::icon('insert')."</a>";
-		$htmlsection = new htmlSection(array('class'=>'admin', 'headerTag'=>'header', 'headerLabel'=>_("Elenco"), 'headerLinks'=>array($filter, $link_insert)));
-
-		$numberTotRecord = "SELECT id FROM ".$this->_tbl_news." WHERE instance='$this->_instance' $where_f";
-		$this->_list = new PageList($this->_news_for_page, $numberTotRecord, 'query');
-		
-		$start = $this->_list->start();
-		$limit = $this->_db->limit($this->_list->rangeNumber, $start);
-		$query = "SELECT id, ctg, img, title, text, filename, ".$this->_field_date.", social, private, published FROM ".$this->_tbl_news." WHERE instance='$this->_instance' $where_f ORDER BY $order $limit";
-		$a = $this->_db->selectquery($query);
-
-		$GINO = "<p style=\"text-align:right\">"; 
-		$GINO .= "</p>"; 
-
-		$link = $this->_home."?evt[$this->_instanceName-manageDoc]";
-
-		$GINO .= "<table class=\"generic\">";
-		$GINO .= "<tr>";
-		$GINO .= "<th>"._("Id")."</th>";
-		$GINO .= "<th><a href=\"$link&order=date\">"._("Data")."</a></th>";
-		$GINO .= "<th>"._("Categoria")."</th>";
-		$GINO .= "<th><a href=\"$link&order=title\">"._("Titolo")."</a></th>";
-		$GINO .= "<th>"._("Immagine")."</th>";
-		$GINO .= "<th>"._("File")."</th>";
-		$GINO .= "<th>"._("Social")."</th>";
-		$GINO .= "<th>"._("Privata")."</th>";
-		$GINO .= "<th><a href=\"$link&order=published\">"._("Pubblicata")."</a></th>";
-		$GINO .= "<th class=\"thIcon\"></th>";
-		$GINO .= "</tr>";
-		if(sizeof($a) > 0) {
-			foreach($a as $b) {
-				$id = $b['id'];
-				$link_modify = "<a href=\"index.php?evt[".$this->_instanceName."-manageDoc]&amp;id=$id&amp;start=$start&amp;order=$order&amp;action=".$this->_act_modify.($filterCtg?"&amp;filterCtg=$filterCtg":"")."\">".$this->icon('modify', '')."</a>";
-				$link_delete = "<span class=\"link\" onclick=\"if(confirmSubmit('"._("Sicuro di voler procedere con l\'eliminazione")."')) location.href='$this->_home?evt[".$this->_instanceName."-actionDelNews]&amp;id=$id&amp;start=$start&amp;order=$order".($filterCtg?"&amp;filterCtg=$filterCtg":"")."'\">".$this->icon('delete', '')."</span>";
-				$url = $this->_home."?pt[$this->_instanceName-manageDoc]&id=$id&action=view";
-				$link_view = "<span class=\"link\" onclick=\"window.myWin = new layerWindow({'title':'"._("Preview news")."', 'url':'$url', 'bodyId':'prew_news$id', 'width':400, reloadZindex:true});window.myWin.display();\">".$this->icon('view', '')."</span>";
-
-				if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1)) $links = array($link_modify, $link_delete, $link_view);
-				else $links = array($link_modify, $link_view);
-
-				$ctgObj = new category($b['ctg'], $this->_tbl_ctg, $this->_instance);
-				$GINO .= "<tr>";
-				$GINO .= "<td>".$id."</td>";
-				$GINO .= "<td>".dbDatetimeToDate($b['date'], "/")." ".dbDatetimeToTime($b['date'])."</td>";
-				$GINO .= "<td>".$ctgObj->completeName()."</td>";
-				$GINO .= "<td>".htmlChars($b['title'])."</td>";
-				$GINO .= "<td>".($b['img'] ? "<span onclick=\"Slimbox.open('$this->_data_www/$this->_prefix_img{$b['img']}')\" class=\"link\">".$b['img']."</span>" : "")."</td>";
-				$GINO .= "<td>".htmlChars($b['filename'])."</td>";
-				$GINO .= "<td>".($b['social']=='yes' ? _("si") : _("no"))."</td>";
-				$GINO .= "<td>".($b['private']=='yes' ? _("si") : _("no"))."</td>";
-				if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1)) {
-					$GINO .= "<td>";
-					$onchange = "onclick=\"ajaxRequest('post', '$this->_home?pt[$this->_instanceName-changePublished]', 'id=$id&published='+$(this).value, 'response_$id', {'load':'response_$id', 'script':true});\"";
-					$GINO .= $gform->radio('published_'.$id, $b['published'], array("1"=>_("si"), "0"=>_("no")), '0', array("js"=>$onchange));		
-					$GINO .= "<span id=\"response_$id\"></span></td>";
-				}
-				else $GINO .= "<td>".($b['published'] ? _("si") : _("no"))."</td>";
-				$GINO .= "<td class=\"tdIcon\">".implode(" ", $links)."</td>";
-				$GINO .= "</tr>";
-			}
-		}
-		$GINO .= "</table>";
-
-		if(!sizeof($a)) 
-			$GINO .= "<p>"._("Non risultano elementi registrati")."</p>\n";
-
-		$htmlsection->content = $GINO;
-		
-		$htmlsection->footer = "<p>".$this->_list->listReferenceGINO($this->_plink->aLink($this->_instanceName, 'manageDoc', '', "order=$order".($filterCtg?"&filterCtg=$filterCtg":""), array("basename"=>false)))."</p>";
-
-		return $htmlsection->render();
-
-	}
-
-	/**
-	 * Modifica dello stato di pubblicazione di una news 
-	 * 
-	 * @access public
-	 * @return string
-	 */
-	public function changePublished() {
-	
-		$this->accessGroup($this->_group_1);
-
-		$id = cleanVar($_POST, 'id', 'int', '');
-		$published = cleanVar($_POST, 'published', 'int', '');
-
-		$query = "UPDATE $this->_tbl_news SET published='$published' WHERE id='$id'";
-		$result = $this->_db->actionquery($query);
-
-		return "<script>alert('"._("modifica avvenuta con successo")."');</script>";
-	}
-
-	/**
-	 * Form di inserimento e modifica delle news 
-	 * 
-	 * @param mixed $news_id id della news da modificare
-	 * @param mixed $start indicatore del numero di pagina della lista news da cui si arriva
-	 * @access private
-	 * @return string
-	 */
-	private function formNews($news_id, $start){
-
-		$filterCtg = cleanVar($_GET, 'filterCtg', 'int', '');
-
-		$ctgObj = new category(null, $this->_tbl_ctg, $this->_instance);
-
-		$this->_gform = new Form('gform', 'post', true, array("trnsl_table"=>$this->_tbl_news, "trnsl_id"=>$news_id));
-		$this->_gform->load('dataform');
-		
-		if(!empty($news_id) AND $this->_action == $this->_act_modify)
-		{
-			$query = "SELECT ctg, title, text, img, filename, ".$this->_field_date.", private, social, published FROM ".$this->_tbl_news." WHERE id='$news_id'";
-			$a = $this->_db->selectquery($query);
-			if(sizeof($a) > 0)
-			{
-				foreach($a AS $b)
-				{
-					$ctg = htmlInput($b['ctg']);
-					$title = htmlInput($b['title']);
-					$text = htmlInputEditor($b['text']);
-					$media = htmlInput($b['img']);
-					$attach = htmlInput($b['filename']);
-					$datetime = $b['date'];
-					$datetime_array = explode(" ", $datetime);
-					$date = dbDateToDate($datetime_array[0], "/");
-					$private = htmlInput($b['private']);
-					$social = htmlInput($b['social']);
-					$published = htmlInput($b['published']);
-				}
-
-				$title_form = _("Modifica news");
-				$submit = _("modifica");
-			}
-		}
-		else
-		{
-			$media = $attach = '';
-			$date = '';
-			$ctg = $this->_gform->retvar('ctg', '');
-			$private = $this->_gform->retvar('private', '');
-			$social = $this->_gform->retvar('social', '');
-			$published = $this->_gform->retvar('published', '');
-			$title = $this->_gform->retvar('title', '');
-			$text = $this->_gform->retvar('text', '');
-			$title_form = _("Nuova news");
-			$submit = _("inserisci");
-		}
-		$required = 'date,title,text';
-		
-		$htmlsection = new htmlSection(array('class'=>'admin', 'headerTag'=>'h1', 'headerLabel'=>$title_form));
-
-		$GINO = $this->_gform->form($this->_home."?evt[".$this->_instanceName."-actionNews]".($filterCtg?"&filterCtg=$filterCtg":""), true, $required);
-		$GINO .= $this->_gform->hidden('reference', $news_id);
-		$GINO .= $this->_gform->hidden('action', $this->_action);
-		$GINO .= $this->_gform->hidden('start', $start);
-		
-		$GINO .= $this->_gform->cradio('private', $private, array("yes"=>_("si"),"no"=>_("no")), 'no', array(_("News privata"), _("se la news viene impostata come privata potrà essere visualizzata solamente da persone iscritte alle news")), array("required"=>true));
-		$ctg_et = $ctgObj->inputTreeArray("SELECT id FROM ".$this->_tbl_ctg." WHERE id NOT IN (SELECT parent FROM ".$this->_tbl_ctg.")");
-		$GINO .= $this->_gform->cselect('ctg', $ctg, $ctg_et, _("Categoria"), array());
-		$GINO .= $this->_gform->cinput_date('date', $date, _("Data"), array('required'=>true, 'inputClickEvent'=>false));
-		$GINO .= $this->_gform->cinput('title', 'text', $title, _("Titolo"), array("size"=>40, "maxlength"=>200, "required"=>true, "trnsl"=>true, "field"=>"title"));
-		$GINO .= $this->_gform->fcktextarea('text', $text, _("Testo"), array("required"=>true, "notes"=>true, "img_preview"=>false, "trnsl"=>true, "field"=>"text"));
-		$img_view = $this->_data_www.'/'.$this->_prefix_img."$media";
-		$GINO .= $this->_gform->cfile('media', $media, _("Media"), array("extensions"=>$this->_extension_media, "del_check"=>true, "preview"=>true, "previewSrc"=>$img_view));
-		$GINO .= $this->_gform->cfile('filename', $attach, _("File allegato"), array("extensions"=>$this->_extension_attach, "del_check"=>true));
-		$GINO .= $this->_gform->cradio('social', $social, array("yes"=>_("si"),"no"=>_("no")), 'no', _("Attiva condivisione social networks"), array("required"=>true));
-		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1))
-			$GINO .= $this->_gform->cradio('published', $published, array("1"=>_("si"),"0"=>_("no")), '0', _("Pubblica"), array("required"=>true));
-		$GINO .= $this->_gform->cinput('submit_form_news', 'submit', $submit, '', array('classField'=>'submit'));
-		
-		$GINO .= $this->_gform->cform();
-		
-		$htmlsection->content = $GINO;
-		
-		return $htmlsection->render();
-	}
-	
-	/**
-	 * Azione di salvataggio su database dei contenuti inseriti nel form nuova/modifica news 
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function actionNews(){
-
-		$this->accessGroup($this->_group_2);
-		
-		$this->_gform = new Form('gform','post', true);
-		$this->_gform->save('dataform');
-		$req_error = $this->_gform->arequired();
-		
-		$filterCtg = cleanVar($_GET, 'filterCtg', 'int', '');
-
-		$reference = cleanVar($_POST, 'reference', 'int', '');
-		$action = cleanVar($_POST, 'action', 'string', '');
-		$start = cleanVar($_POST, 'start', 'int', '');
-		$date = cleanVar($_POST, 'date', 'string', '');
-		// Input file
-		$media_name = $_FILES['media']['name'];
-		$media_tmp = $_FILES['media']['tmp_name'];
-		$file_name = $_FILES['filename']['name'];
-		$file_tmp = $_FILES['filename']['tmp_name'];
-		
-		$old_media = cleanVar($_POST, 'old_media', 'string', '');
-		$old_file = cleanVar($_POST, 'old_filename', 'string', '');
-		// End
-				
-		$link = "start=$start".($filterCtg?"&filterCtg=$filterCtg":"");
-		$link_error = $this->_home."?evt[$this->_instanceName-manageDoc]&action=$action&id=$reference&start=$start".($filterCtg?"&filterCtg=$filterCtg":"");
-		$link_error_file = $this->_home."?evt[$this->_instanceName-manageDoc]";
-
-		if($req_error > 0) 
-			exit(error::errorMessage(array('error'=>1), $link_error));
-		
-		$hour = date("H:i:s");
-		$datetime = dateToDbDate($date, '/')." ".$hour;
-
-		$directory = $this->_data_dir.$this->_os;
-		$redirect = $this->_instanceName.'-manageDoc';
-		
-		$values = array(
-			"ctg"=>cleanVar($_POST, 'ctg', 'int', ''),
-			"date"=>$datetime,
-			"title"=>cleanVar($_POST, 'title', 'string', ''),
-			"text"=>cleanVarEditor($_POST, 'text', ''),
-			"private"=>cleanVar($_POST, 'private', 'string', ''),
-			"social"=>cleanVar($_POST, 'social', 'string', '')
+		$buffer = $admin_table->backOffice(
+			'newsCtg', 
+			array(
+				'list_display' => array('id', 'name', 'slug'),
+				'list_title'=>_("Elenco categorie"), 
+				'list_description'=>"<p>"._('Ciascuna news inserita potrà essere associata ad una o più categorie qui definite.')."</p>",
+			     ),
+			array(), 
+			array(
+				'name' => array(
+					'js' => $name_onblur
+				),
+				'slug' => array(
+					'id' => 'slug'
+				),
+				'description' => array(
+					'widget'=>'editor', 
+					'notes'=>false, 
+					'img_preview'=>false, 
+				),
+                'image' => array(
+                    'preview' => true
+                )
+			)
 		);
-		if($this->_action==$this->_act_insert) $values['instance'] = $this->_instance;
-		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1)) 
-			$values['published'] = cleanVar($_POST, 'published', 'string', '');
 
-
-		if(!empty($reference) && $action == $this->_act_modify) {
-			$query = "UPDATE ".$this->_tbl_news." SET ";
-			foreach($values as $k=>$v) $query .= "$k='$v', ";
-			$query = substr($query, 0, -2)." WHERE id='$reference'";
-		}
-		elseif(empty($reference) && $action == $this->_act_insert) {	// insert
-
-			$fields = '(';
-			$qv = '(';
-			foreach($values as $k=>$v) { $fields .= "$k,"; $qv .= "'$v',"; }
-			$fields = substr($fields, 0, -1).")";
-			$qv = substr($qv, 0, -1).")";
-			$query = "INSERT INTO ".$this->_tbl_news." $fields VALUES $qv";
-		}
-		
-		if(!$this->_db->actionquery($query)) exit(error::errorMessage(array('error'=>_("Impossibile salvare i dati inseriti")), $link_error));
-
-		$rid = $reference?$reference:$this->_db->getlastid();
-
-		$this->_gform->manageFile('media', $old_media, true, $this->_extension_media, $directory, $link_error_file, $this->_tbl_news, 'img', 'id', $rid, 
-			array("prefix_file"=>$this->_prefix_img, "prefix_thumb"=>$this->_prefix_thumb, "width"=>$this->_width_img, "thumb_width"=>$this->_width_thumb));
-		$this->_gform->manageFile('filename', $old_file, false, $this->_extension_attach, $directory, $link_error_file, $this->_tbl_news, 'filename', 'id', $rid);
-		
-		EvtHandler::HttpCall($this->_home, $this->_instanceName.'-manageDoc', $link);
+		return $buffer;
 	}
+
+	/**
+	 * Interfaccia di amministrazione delle news 
+	 * 
+	 * @return interfaccia di back office
+	 */
+	private function manageNews() {
+
+		$registry = registry::instance();
+		$registry->addJs($this->_class_www.'/news.js');
+
+    $edit = cleanVar($_GET, 'edit', 'int', '');
+
+    $name_onblur = !$edit 
+      ? "onblur=\"var date = $('date').value; $('slug').value = date.substring(6, 10) + date.substring(3, 5) + date.substring(0, 2) + '-' + $(this).value.slugify()\""
+      : '';
 	
-	/**
-	 * Azione di inserimento/modifica categoria 
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function actionCtg() {
-
-		$ctg_id = cleanVar($_POST, 'ctg_id', 'int', '');
-
-		$ctg = new category($ctg_id, $this->_tbl_ctg, $this->_instance);
-
-		$result = $ctg->actionCtg($this->_home."?evt[$this->_instanceName-manageDoc]&block=ctg".($ctg->id
-			?"&action=$this->_act_modify&ctg_id=$ctg->id"
-			:"&action=$this->_act_insert"));
-
-		EvtHandler::HttpCall($this->_home, $this->_instanceName.'-manageDoc', 'block=ctg');
-	}
-
-	/**
-	 * Azione di eliminazione di una categoria 
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function actionDelCtg() {
-
-		$ctg_id = cleanVar($_POST, 'ctg_id', 'int', '');
-
-		$ctg = new category($ctg_id, $this->_tbl_ctg, $this->_instance);
-
-		$result = $ctg->actionDelCtg($this->_home."?evt[$this->_instanceName-manageDoc]&block=ctg&action=$this->_act_delete&ctg_id=$ctg->id");
-
-		EvtHandler::HttpCall($this->_home, $this->_instanceName.'-manageDoc', 'block=ctg');
-	}
-
-	/**
-	 * Azione di eliminazione di una news 
-	 * 
-	 * @access public
-	 * @return void
-	 */
-	public function actionDelNews() {
-
-		$id = cleanVar($_GET, 'id', 'int', '');
-		$start = cleanVar($_GET, 'start', 'int', '');
-		$order = cleanVar($_GET, 'order', 'string', '');
-		$filterCtg = cleanVar($_GET, 'filterCtg', 'int', '');
-
-		$query = "SELECT img, filename FROM ".$this->_tbl_news." WHERE id='$id'";
-		$a = $this->_db->selectquery($query);
-		if(sizeof($a) > 0) {
-			$img = $a[0]['img'];
-			$filename = $a[0]['filename'];
-						
-			if(!empty($img)) {
-				@unlink($this->_data_dir.$this->_os.$this->_prefix_img.$img);
-				@unlink($this->_data_dir.$this->_os.$this->_prefix_thumb.$img);
-			}
-			if(!empty($filename)) {
-				@unlink($this->_data_dir.$this->_os.$filename);
-			}
+		if(!$this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_1)) {
+			$remove_fields = array('published');
+			$delete_deny = 'all';
+		}
+		else {
+			$remove_fields = array();
+			$delete_deny = array();
 		}
 
-		language::deleteTranslations($this->_tbl_news, $id);
-				
-		$query = "DELETE FROM ".$this->_tbl_news." WHERE id='$id'";
-		$this->_db->actionquery($query);
+		$admin_table = new adminTable($this, array('delete_deny'=>$delete_deny));
 
-		EvtHandler::HttpCall($this->_home, $this->_instanceName.'-manageDoc', "order=$order&start=$start".($filterCtg?"&filterCtg=$filterCtg":""));
+		$buffer = $admin_table->backOffice(
+			'newsItem', 
+			array(
+				'list_display' => array('id', 'date', 'categories', 'title', 'published', 'private'),
+				'list_title'=>_("Elenco news"), 
+				'filter_fields'=>array('categories', 'title', 'published') 
+			),
+			array(
+				'removeFields' => $remove_fields
+			), 
+			array(
+        'date' => array(
+          'id' => 'date'
+        ),
+				'title' => array(
+					'js' => $name_onblur
+				),
+				'slug' => array(
+					'id' => 'slug'
+				),
+				'text' => array(
+					'widget'=>'editor', 
+					'notes'=>false, 
+					'img_preview'=>false, 
+				),
+				'img' => array(
+					'preview'=>true
+				)
+			)
+		);
 
+		return $buffer;
 	}
 
 	/**
-	 * Converte il formato datetime del databse in un formato tipo data gg/mm/aaaa 
-	 * 
-	 * @param string $datetime stringa tipo datetime
-	 * @access private
-	 * @return void
-	 */
-	private function shortDate($datetime) {
-		
-		$datetime_array = explode(" ", $datetime);
-		$date = $datetime_array[0];
-		$date_array = explode("-",$date);
-		
-		return $date_array[2]."/".$date_array[1]."/".substr($date_array[0],2,2);
-	}
-	
-	/**
-	 * Metodo per la definizione di parametri da utilizzare per il modulo "Ricerca nel sito" 
-	 * 
+	 * Metodo per la definizione di parametri da utilizzare per il modulo "Ricerca nel sito"
+	 *
 	 * Il modulo "Ricerca nel sito" di Gino base chiama questo metodo per ottenere informazioni riguardo alla tabella, campi, pesi etc...
-	 * per effettuare la ricerca dei contenuti. 
+	 * per effettuare la ricerca dei contenuti.
 	 *
 	 * @access public
 	 * @return array[string]mixed array associativo contenente i parametri per la ricerca
 	 */
 	public function searchSite() {
-	
-		return array("table"=>"news", "selected_fields"=>array("id", "date", array("highlight"=>true, "field"=>"title"), array("highlight"=>true, "field"=>"text")), "required_clauses"=>array("instance"=>$this->_instance), "weight_clauses"=>array("title"=>array("weight"=>3), "text"=>array("weight"=>1)));	
-	
+		
+		if($this->_access->AccessVerifyGroupIf($this->_className, $this->_instance, $this->_user_group, $this->_group_3)) {
+			$private = true;
+		}
+		else {
+			$private = false;
+		}
+
+		return array(
+			"table"=>newsItem::$tbl_item, 
+			"selected_fields"=>array("id", "slug", "date", array("highlight"=>true, "field"=>"title"), array("highlight"=>true, "field"=>"text")), 
+			"required_clauses"=>$private ? array("instance"=>$this->_instance, 'published'=>1) : array("instance"=>$this->_instance, 'private'=>0, 'published'=>1), 
+			"weight_clauses"=>array("title"=>array("weight"=>3), "text"=>array("weight"=>1))
+		);
 	}
 
 	/**
-	 * Definisce la presentazione del singolo item trovato a seguito di ricerca (modulo "Ricerca nel sito") 
-	 * 
-	 * @param mixed array array[string]string array associativo contenente i risultati della ricerca 
+	 * Definisce la presentazione del singolo item trovato a seguito di ricerca (modulo "Ricerca nel sito")
+	 *
+	 * @param mixed array array[string]string array associativo contenente i risultati della ricerca
 	 * @access public
 	 * @return void
 	 */
 	public function searchSiteResult($results) {
 	
-		$buffer = "<div>".dbDatetimeToDate($results['date'], "/")." <a href=\"$this->_home?evt[$this->_instanceName-viewList]&id=".$results['id']."\">";
-		$buffer .= $results['title'] ? htmlChars($results['title']) : htmlChars($this->_db->getFieldFromId($this->_tbl_news, 'title', 'id', $results['id']));
+		$obj = new newsItem($results['id'], $this);
+
+		$buffer = "<div>".dbDatetimeToDate($results['date'], "/")." <a href=\"".$this->_plink->aLink($this->_instanceName, 'detail', array('id'=>$results['slug']))."\">";
+		$buffer .= $results['title'] ? htmlChars($results['title']) : htmlChars($obj->ml('title'));
 		$buffer .= "</a></div>";
-		if($results['text']) $buffer .= "<div class=\"search_text_result\">...".htmlChars($results['text'])."...</div>";
-		return $buffer;
+
+		if($results['text']) {
+			$buffer .= "<div class=\"search_text_result\">...".htmlChars($results['text'])."...</div>";
+		}
+		else {
+			$buffer .= "<div class=\"search_text_result\">".htmlChars(cutHtmlText($obj->ml('text'), 120, '...', false, false, false, array('endingPosition'=>'in')))."</div>";
+		}
 		
+		return $buffer;
+
 	}
-	
+
+    /**
+     * Adattatore per la classe newsletter 
+     * 
+     * @access public
+     * @return array di elementi esportabili nella newsletter
+     */
+    public function systemNewsletterList() {
+        
+        $news = newsItem::get($this, array('private'=>true, 'order'=>'date DESC, insertion_date DESC', 'limit'=>array(0, $this->_newsletter_news_number)));
+
+        $items = array();
+        foreach($news as $n) {
+            $items[] = array(
+                _('id') => $n->id,
+                _('titolo') => htmlChars($n->ml('title')),
+                _('privata') => $n->private ? _('si') : _('no'),
+                _('pubblicata') => $n->published ? _('si') : _('no'),
+                _('data') => dbDateToDate($n->date),
+            ); 
+        }
+
+        return $items;
+    }
+
+    /**
+     * Contenuto di una news quanto inserita in una newsletter 
+     * 
+     * @param int $id identificativo della news
+     * @access public
+     * @return contenuto news
+     */
+    public function systemNewsletterRender($id) {
+
+        $n = new newsItem($id, $this);
+
+        preg_match_all("#{{[^}]+}}#", $this->_newsletter_news_code, $matches);
+        $buffer = $this->parseTemplate($n, $this->_newsletter_news_code, $matches);
+
+        return $buffer;
+
+    }
+
 	/**
-	 * Genera un feed RSS standard che presenta tutte le news pubblicate 
-	 * 
+	 * Genera un feed RSS standard che presenta le ultime 50 news pubblicate
+	 *
 	 * @access public
 	 * @return string xml che definisce il feed RSS
 	 */
 	public function feedRSS() {
-		
+
 		$this->accessType($this->_access_base);
 
 		header("Content-type: text/xml; charset=utf-8");
-		
+
 		$function = "feedRSS";
 		$title_site = pub::variable('head_title');
-	        $title =  $title_site.($this->_title_page ? " - ".$this->_title_page : "");
+		$title = $title_site.($this->_title_list ? " - ".$this->_title_list : "");
 		$description = $this->_db->getFieldFromId(TBL_MODULE, 'description', 'id', $this->_instance);
-		
+
 		$header = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
- 		$header .= "<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
- 		$header .= "<channel>\n";
- 		$header .= "<atom:link href=\"".$this->_url_root.$this->_home."?pt%5B$this->_instanceName-".$function."%5D\" rel=\"self\" type=\"application/rss+xml\" />\n";
- 		$header .= "<title>".$title."</title>\n";
- 		$header .= "<link>".$this->_url_root.$this->_home."</link>\n";
- 		$header .= "<description>".$description."</description>\n";
- 		$header .= "<language>$this->_lng_nav</language>";
- 		$header .= "<copyright> Copyright 2009 Otto srl </copyright>\n";
- 		$header .= "<docs>http://blogs.law.harvard.edu/tech/rss</docs>\n";
+		$header .= "<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
+		$header .= "<channel>\n";
+		$header .= "<atom:link href=\"".$this->_url_root.$this->_home."?pt%5B$this->_instanceName-".$function."%5D\" rel=\"self\" type=\"application/rss+xml\" />\n";
+		$header .= "<title>".$title."</title>\n";
+		$header .= "<link>".$this->_url_root.$this->_home."</link>\n";
+		$header .= "<description>".$description."</description>\n";
+		$header .= "<language>$this->_lng_nav</language>";
+		$header .= "<copyright> Copyright 2012 Otto srl </copyright>\n";
+		$header .= "<docs>http://blogs.law.harvard.edu/tech/rss</docs>\n";
 
 		echo $header;
 
-		$query = "SELECT id, date FROM news WHERE instance='$this->_instance' AND published='1' ORDER BY date DESC LIMIT 50";
-		$a = $this->_db->selectquery($query);
-		if(sizeof($a) > 0)
-		{
-			foreach($a AS $b)
-			{
-				$id = htmlChars($b['id']);
-				$title = htmlChars($this->_trd->selectTXT('news', 'title', $id));
-				$text = htmlChars($this->_trd->selectTXT('news', 'text', $id));
-				$text = str_replace("src=\"", "src=\"".$this->_web_address, $text);
-				
-				$datetime = htmlChars($b['date']);
-				$datetime_array = explode(" ", $datetime);
-				$date = dbDateToDate($datetime_array[0],"/");
-				$time = $datetime_array[1];
-				
+		$news = newsItem::get($this, array('private'=>false, 'order'=>'date DESC, insertion_date DESC', 'limit'=>array(0, 50)));
+		if(count($news) > 0) {
+			foreach($news as $n) {
+				$id = htmlChars($n->id);
+				$title = htmlChars($n->ml('title'));
+				$text = htmlChars($n->ml('text'));
+				$text = str_replace("src=\"", "src=\"".substr($this->_url_root,0,strrpos($this->_url_root,"/")), $text);
+				$text = str_replace("href=\"", "href=\"".substr($this->_url_root,0,strrpos($this->_url_root,"/")), $text);
+
+				$date = date('d/m/Y', strtotime($n->date));
+
 				echo "<item>\n";
 				echo "<title>".$date.". ".$title."</title>\n";
-				echo "<link>".$this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id))."</link>\n";
+				echo "<link>".$this->_url_root.SITE_WWW."/".$this->_plink->aLink($this->_instanceName, 'detail', array("id"=>$n->slug))."</link>\n";
 				echo "<description>\n";
 				echo "<![CDATA[\n";
 				echo $text;
 				echo "]]>\n";
 				echo "</description>\n";
-				echo "<guid>".$this->_url_root.SITE_WWW.$this->_plink->aLink($this->_instanceName, 'view', array("id"=>$id))."</guid>\n"; 
-				//echo "<pubDate>$date $time</pubDate>\n";
+				echo "<guid>".$this->_url_root.SITE_WWW.$this->_plink->aLink($this->_instanceName, 'detail', array("id"=>$n->slug))."</guid>\n";
 				echo "</item>\n";
 			}
 		}
-		
+
 		$footer = "</channel>\n";
- 		$footer .= "</rss>\n";
+		$footer .= "</rss>\n";
 
 		echo $footer;
-		exit;		
+		exit;
 	}
+
 }
 
 ?>
