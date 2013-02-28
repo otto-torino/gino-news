@@ -1,9 +1,9 @@
 news library for gino CMS by Otto Srl, MIT license
 ===================================================================
-Release 1.12.4 - Requires gino 1.1
+Release 1.12.4 - Requires gino 1.3.0
 
-Libreria per la gestione di news categorizzate e non.   
-La documentazione per lo sviluppatore della versione 1.11 (generata con doxygen) è contenuta all'interno della directory doc.   
+Libreria per la gestione di news categorizzate.   
+La documentazione per lo sviluppatore della versione 1.13 (generata con doxygen) è contenuta all'interno della directory doc.   
 La documentazione dell'ultima versione disponibile la si trova qui:    
 http://otto-torino.github.com/gino-news
 
@@ -18,27 +18,32 @@ CARATTERISTICHE
 - condivisione social networks
 - visualizzazione ristretta a gruppi di utenti di sistema
 - gestione della pubblicazione e di un gruppo di utenti redattori
+- personalizzazione dei template di visualizzazione da opzioni
+- contenuti ricercabili attraverso il modulo "Ricerca nel sito" di Gino
 
 OPZIONI CONFIGURABILI
 ------------------------------
 - titolo ultime news
 - titolo elenco news
 - titolo vetrina ultime news
-- visualizzazione categorie
-- numero di news visualizzate
-- numero di caratteri mostrati nei riassunti
-- modalità di visualizzazione della news completa (layer, expand, nuova pagina)
-- dimensioni layer (vedi opzione precedente)
-- effetto lightbox sull'immagine
-- modulo di ricerca visibile
-- larghezza delle immagini a seguito di ridimensionamento e creazione thumb
-- feed RSS
+- template singolo elemento nella vista ultime news
+- numero di ultime news visualizzate
+- template singolo elemento nella vista archivio news
+- numero news per pagina
+- template singolo elemento nella vista vetrina ultime news
+- numero di news mostrate nella vetrina
+- animazione automatica elementi vetrina
+- intervallo animazione automatica
+- template dettaglio news
+- larghezza massima immagine
+- larghezza thumb
 
 OUTPUTS
 ------------------------------
 - lista ultime news (numero configurabile da opzioni)
 - lista completa news paginata
 - vetrina ultime news
+- feed RSS
 
 INSTALLAZIONE
 ------------------------------
