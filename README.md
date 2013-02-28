@@ -20,6 +20,7 @@ CARATTERISTICHE
 - gestione della pubblicazione e di un gruppo di utenti redattori
 - personalizzazione dei template di visualizzazione da opzioni
 - contenuti ricercabili attraverso il modulo "Ricerca nel sito" di Gino
+- contenuti resi disponibili al modulo newsletter di Gino (il modulo deve essere installato sul sistema)
 
 OPZIONI CONFIGURABILI
 ------------------------------
