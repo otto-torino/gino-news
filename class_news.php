@@ -3,7 +3,7 @@
  * \file class_news.php
  * @brief Contiene la definizione ed implementazione della classe \ref news.
  * 
- * @version 2.0
+ * @version 2.0.1
  * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
@@ -61,7 +61,7 @@ require_once('class.newsCtg.php');
  * - vista singola news
  * - feed RSS
  * 
- * @version 2.0
+ * @version 2.0.1
  * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
@@ -198,10 +198,10 @@ class news extends AbstractEvtClass {
 
 		$this->_view_dir = dirname(__FILE__).OS.'view';
 
-		$last_news_code = "<article><p>{{ thumb|class:left }}</p><h1>{{ title|link }}</h1>{{ text|chars:80 }}<div class="null"></div></article>";
-		$list_news_code = "<article><header><h1>{{ title }}</h1><p>Pubblicata il <time>{{ date }}</time> in {{ categories }}</p></header>{{ img|class:left }}{{ text }}{{ social }}<div class="null"></div></article>";
+		$last_news_code = "<article><p>{{ thumb|class:left }}</p><h1>{{ title|link }}</h1>{{ text|chars:80 }}<div class=\"null\"></div></article>";
+		$list_news_code = "<article><header><h1>{{ title }}</h1><p>Pubblicata il <time>{{ date }}</time> in {{ categories }}</p></header>{{ img|class:left }}{{ text }}{{ social }}<div class=\"null\"></div></article>";
 		$showcase_news_code = "<article><p>{{ img|class:left }}</p><h1>{{ title|link }}</h1>{{ text|chars:500 }}</article>";
-		$detail_news_code = "<header><h1>{{ title }}</h1><p>Pubblicata il <time>{{ date }}</time> in {{ categories }}</p></header>{{ img|class:left }}{{ text }}<p>{{ attached }}</p>{{ social }}<div class="null"></div>";
+		$detail_news_code = "<header><h1>{{ title }}</h1><p>Pubblicata il <time>{{ date }}</time> in {{ categories }}</p></header>{{ img|class:left }}{{ text }}<p>{{ attached }}</p>{{ social }}<div class=\"null\"></div>";
 
 		$this->_optionsValue = array(
 			'title_last'=>_("Ultime news"),
