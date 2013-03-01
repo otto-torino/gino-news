@@ -8,7 +8,7 @@
 * - **section_id**: attributo id del tag section
 * - **tpl**: template della news deciso da opzioni
 *
-* @version 1.12
+* @version 2.0.1
 * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
 * @authors Marco Guidotti guidottim@gmail.com
 * @authors abidibo abidibo@gmail.com

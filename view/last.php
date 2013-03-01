@@ -11,7 +11,7 @@
 * - **items**: template per ciascuna delle ultime news (decisi da opzioni)   
 * - **archive**: link all'archivio completo
 *
-* @version 1.12
+* @version 2.0.1
 * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
 * @authors Marco Guidotti guidottim@gmail.com
 * @authors abidibo abidibo@gmail.com
