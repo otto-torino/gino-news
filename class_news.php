@@ -3,7 +3,7 @@
  * \file class_news.php
  * @brief Contiene la definizione ed implementazione della classe \ref news.
  * 
- * @version 2.0.1
+ * @version 2.0.2
  * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
@@ -61,7 +61,7 @@ require_once('class.newsCtg.php');
  * - vista singola news
  * - feed RSS
  * 
- * @version 2.0.1
+ * @version 2.0.2
  * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com

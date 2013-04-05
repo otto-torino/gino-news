@@ -12,7 +12,7 @@
 * - **pagination_navigation**: navigazione della paginazione
 * - **pagination_summary**: riassunto paginazione (es. 1-5 di 10)
 *
-* @version 2.0.1
+* @version 2.0.2
 * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
 * @authors Marco Guidotti guidottim@gmail.com
 * @authors abidibo abidibo@gmail.com
