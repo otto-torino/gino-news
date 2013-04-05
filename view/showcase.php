@@ -14,7 +14,7 @@
 * - **ctrls**: controlli della vetrina (per lo slide)
 * - **options**: opzioni da passare alla classe javascript che gestisce lo slide
 *
-* @version 2.0.1
+* @version 2.0.2
 * @copyright 2012 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
 * @authors Marco Guidotti guidottim@gmail.com
 * @authors abidibo abidibo@gmail.com
