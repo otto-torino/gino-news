@@ -8,6 +8,14 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -69,6 +77,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     </ul>
   </div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('class_8_article_8php_source.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -310,11 +332,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="class_gino_1_1_app_1_1_news_1_1_article_html_a77b45221e76c3a3e12589c67c7da60ec"><div class="ttname"><a href="class_gino_1_1_app_1_1_news_1_1_article.html#a77b45221e76c3a3e12589c67c7da60ec">Gino\App\News\Article\getAttachmentPath</a></div><div class="ttdeci">getAttachmentPath()</div><div class="ttdoc">Path relativo dell&#39;allegato. </div><div class="ttdef"><b>Definition:</b> <a href="class_8_article_8php_source.html#l00247">class.Article.php:247</a></div></div>
 <div class="ttc" id="namespace_gino_1_1_app_1_1_news_html"><div class="ttname"><a href="namespace_gino_1_1_app_1_1_news.html">Gino\App\News</a></div><div class="ttdoc">Namespace dell&#39;applicazione News </div><div class="ttdef"><b>Definition:</b> <a href="class_8_article_8php_source.html#l00012">class.Article.php:12</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 10 2014 16:40:34 for gino-news by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.8
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="class_8_article_8php.html">class.Article.php</a></li>
+    <li class="footer">Generated on Wed Dec 10 2014 18:48:28 for gino-news by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
+  </ul>
+</div>
 </body>
 </html>

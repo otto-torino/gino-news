@@ -8,6 +8,14 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -66,10 +74,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="classes.html"><span>Data&#160;Structure&#160;Index</span></a></li>
-      <li><a href="hierarchy.html"><span>Class&#160;Hierarchy</span></a></li>
+      <li><a href="inherits.html"><span>Class&#160;Hierarchy</span></a></li>
       <li><a href="functions.html"><span>Data&#160;Fields</span></a></li>
     </ul>
   </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('class_gino_1_1_app_1_1_news_1_1_category.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -84,11 +107,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="namespace_gino.html">Gino</a></li><li class="navelem"><a class="el" href="namespace_gino_1_1_app.html">App</a></li><li class="navelem"><a class="el" href="namespace_gino_1_1_app_1_1_news.html">News</a></li><li class="navelem"><a class="el" href="class_gino_1_1_app_1_1_news_1_1_category.html">Category</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
@@ -104,11 +122,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="dynheader">
 Inheritance diagram for Category:</div>
 <div class="dyncontent">
- <div class="center">
-  <img src="class_gino_1_1_app_1_1_news_1_1_category.png" usemap="#Category_map" alt=""/>
-  <map id="Category_map" name="Category_map">
+<div class="center"><img src="class_gino_1_1_app_1_1_news_1_1_category__inherit__graph.png" border="0" usemap="#_category_inherit__map" alt="Inheritance graph"/></div>
+<map name="_category_inherit__map" id="_category_inherit__map">
 </map>
- </div></div>
+<center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
+<div class="dynheader">
+Collaboration diagram for Category:</div>
+<div class="dyncontent">
+<div class="center"><img src="class_gino_1_1_app_1_1_news_1_1_category__coll__graph.png" border="0" usemap="#_category_coll__map" alt="Collaboration graph"/></div>
+<map name="_category_coll__map" id="_category_coll__map">
+</map>
+<center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -308,11 +332,15 @@ abidibo <a href="#" onclick="location.href='mai'+'lto:'+'abi'+'di'+'bo@'+'gm'+'a
 <li><a class="el" href="class_8_category_8php_source.html">class.Category.php</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Wed Dec 10 2014 16:40:34 for gino-news by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.8
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="namespace_gino.html">Gino</a></li><li class="navelem"><a class="el" href="namespace_gino_1_1_app.html">App</a></li><li class="navelem"><a class="el" href="namespace_gino_1_1_app_1_1_news.html">News</a></li><li class="navelem"><a class="el" href="class_gino_1_1_app_1_1_news_1_1_category.html">Category</a></li>
+    <li class="footer">Generated on Wed Dec 10 2014 18:48:28 for gino-news by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
+  </ul>
+</div>
 </body>
 </html>
