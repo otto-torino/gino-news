@@ -2,9 +2,9 @@
 <html lang="it_IT">
 <head>
 <meta charset="utf-8" />
-<meta name="description" content="gino news, a gino module" />
+<meta name="description" content="gino news, modulo per gino CMS" />
 <meta name="keywords" content="PHP,CMS,LAMP,gino,news" />
-<title>Gino News</title>
+<title>gino-news | gino CMS</title>
 <style>
 body {
 background-color: #eee;
@@ -28,57 +28,58 @@ a:hover { text-decoration:underline; }
 <a href="http://www.otto.to.it">
 <img src="logo.jpg" alt="logo otto" style="float:left; margin-right:10px;"/>
 </a>
-<h1>Gino News</h1>
+<h1>gino-news</h1>
 <p><a href="http://opensource.org/licenses/mit-license.php">MIT license</a></p>
 <p><a href="developer/index.html">Developer documentation</a></p>
 <div style="clear:both"></div>
-<p class="evidence">Libreria per la gestione di news categorizzate pubbliche e private.</p>
+<p class="evidence">Libreria per la gestione di news categorizzate pubbliche e private, con flusso di lavoro redazionale.</p>
 <h2>Caratteristiche</h2>
 <ul>
-<li><b>titolo</b></li>
-<li><b>categoria</b> (opzionale)</li>
-<li><b>data</b></li>
-<li><b>testo</b></li>
-<li><b>immagine</b> (ridimensionamento e creazione thumb automatici e configurabili)</li>
-<li><b>file allegato</b></li>
-<li><b>condivisione social networks</b></li>
-<li><b>visualizzazione ristretta a gruppi di utenti di sistema</b></li>
-<li><b>flusso redazionale</b> (gestione della pubblicazione e di un gruppo di utenti redattori)</li>
-<li><b>personalizzazione dei template di visualizzazione da opzioni</b></li>
-<li><b>contenuti ricercabilii</b> attraverso il modulo "Ricerca nel sito" di Gino</li>
-<li><b>contenuti resi disponibili al modulo newsletter di Gino</b> (il modulo deve essere installato sul sistema)</li>
+    <li>data</li>
+    <li>categorie</li>
+    <li>titolo</li>
+    <li>slug (pretty url)</li>
+    <li>testo</li>
+    <li>tag</li>
+    <li>immagine (con ridimensionamento)</li>
+    <li>file allegato</li>
+    <li>visualizzazione ristretta a gruppi di utenti di sistema</li>
+    <li>condivisione social networks</li>
+    <li>gestione della pubblicazione e di un gruppo di utenti redattori</li>
+    <li>personalizzazione dei template</li>
+    <li>contenuti ricercabili attraverso il modulo "Ricerca nel sito" di Gino</li>
+    <li>contenuti resi disponibili al modulo newsletter di Gino (il modulo deve essere installato sul sistema)</li>
+    <li>feed RSS</li>
 </ul>
 
 <h2>Opzioni</h2>
 <ul>
-<li>titolo ultime news</li>
-<li>titolo elenco news</li>
-<li>titolo vetrina ultime news</li>
-<li>template singolo elemento nella vista ultime newsz</li>
-<li>numero di ultime news visualizzatez</li>
-<li>template singolo elemento nella vista archivio newsz</li>
-<li>numero news per paginaz</li>
-<li>template singolo elemento nella vista vetrina ultime newsz</li>
-<li>numero di news mostrate nella vetrinaz</li>
-<li>animazione automatica elementi vetrinaz</li>
-<li>intervallo animazione automaticaz</li>
-<li>template dettaglio newsz</li>
-<li>larghezza massima immaginez</li>
-<li>larghezza thumbz</li>
+    <li>numero di ultime news visualizzate</li>
+    <li>numero news per pagina in archivio</li>
+    <li>numero di news mostrate nella vetrina</li>
+    <li>animazione automatica elementi vetrina</li>
+    <li>intervallo animazione automatica</li>
+    <li>larghezza massima immagine</li>
+    <li>numero di news esportabili per la newsletter</li>
+</ul>
+
+<h2>Outputs per inserimento in layout</h2>
+<ul>
+    <li>lista ultime news (numero configurabile da opzioni)</li>
+    <li>vetrina ultime news</li>
 </ul>
 
 <h2>Outputs</h2>
 <ul>
-<li>lista ultime news (numero configurabile da opzioni)</li>
-<li>lista completa news paginata</li>
-<li>vetrina ultime news</li>
-<li>feed RSS</li>
+    <li>dettaglio news</li>
+    <li>lista completa news paginata</li>
+    <li>feed RSS</li>
 </ul>
 
 <h2>Installazione</h2>
 <p>Per installare questa libreria seguire la seguente procedura:</p>
 <ul>
-<li>creare un pacchetto zip di nome "news_pkg.zip" con tutti i file e cartelle eccetto README.md e la directory doc</li>
+<li>creare un pacchetto zip di nome "news_pkg.zip" con tutti i file e cartelle eccetto README.md, Doxyfile e la directory doc</li>
 <li>loggarsi nell'area amministrativa e entrare nella sezione "moduli di sistema"</li>
 <li>seguire il link (+) "installa nuovo modulo" e caricare il pacchetto creato al punto 1</li>
 <li>creare nuove istanze del modulo nella sezione "moduli" dell'area amministrativa</li>
