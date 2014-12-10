@@ -1,5 +1,1 @@
-/*
- * Class News configuration file
- */
-name:"news",version:"2.0.1",type:"class",role1:"0",role2:"0",role3:"0",role_group:"1",tbl_name:"news",instance:"yes",description:"Gestore di news con divisione di gruppi di lavoro",removable:"yes",folders:"contents/news"
-
+name:"news",version:"2.1.0",tbl_name:"news",instantiable:"1",description:"Gestore di news categorizzate con gruppi di lavoro",removable:"1",folders:"contents/news"
