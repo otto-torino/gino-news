@@ -2,7 +2,7 @@ Modulo news per gino CMS by Otto Srl, MIT license {#mainpage}
 ==============================================================
 Libreria per la gestione di news categorizzate.
 La documentazione per lo sviluppatore è contenuta all'interno della directory doc.
-La documentazione dell'ultima versione disponibile la si trova qui:
+La documentazione dell'ultima versione disponibile (2.1.0) si trova qui:
 
 http://otto-torino.github.io/gino-news/
 
