@@ -352,7 +352,7 @@ class news extends \Gino\Controller {
             'href' => $request->root_absolute_url.$this->link($this->_instance_name, 'feedRSS')
         ));
 
-        $where_arr = array("published='1'");
+        $where_arr = array("published='1'", "instance='".$this->_instance."'");
         if(!$private) {
             $where_arr[] = "private='0'";
         }
