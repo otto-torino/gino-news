@@ -3,8 +3,8 @@
  * @file class_news.php
  * @brief Contiene la definizione ed implementazione della classe Gino.App.News.news
  *
- * @version 2.1.0
- * @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @version 2.1.1
+ * @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @author Marco Guidotti guidottim@gmail.com
  * @author abidibo abidibo@gmail.com
  */
@@ -28,20 +28,34 @@ require_once('class.Article.php');
 require_once('class.Category.php');
 
 /**
+ * @defgroup news
+ * Modulo di gestione delle news
+ *
+ * Il modulo contiene anche dei css, javascript e file di configurazione.
+ */
+
+/**
+ * \ingroup news
  * @brief Classe di tipo Gino.Controller per la gestione di news categorizzate.
  *
- * Gli output disponibili sono:
- *
- * - ultime n news, n da opzioni (template)
- * - archivio news paginato (vista)
- * - vetrina news (template)
- * - vista singola news (vista)
- * - feed RSS (vista)
- * 
- * @version 2.1.0
- * @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @version 2.1.1
+ * @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authorrMarco Guidotti guidottim@gmail.com
  * @author abidibo abidibo@gmail.com
+ * 
+ * ##OUTPUTS
+ * - @a last: ultime n news, n da opzioni (template)
+ * - @a archive: archivio news paginato (vista)
+ * - @a showcase: vetrina news (template)
+ * - @a detail: vista singola news (vista)
+ * - @a feedRSS: feed RSS (vista)
+ * 
+ * ##PERMESSI
+ * L'applicazione prevede tre livelli di permesso: \n
+ * - can_admin: può modificare i file di frontend (viste e fogli di stile) e le opzioni
+ * - can_publish: può pubblicare ed eliminare le news
+ * - can_write: può inserire e modificare le news ma non le può pubblicare o eliminare
+ * - can_view_private: visualizzazione delle news impostate come private
  */
 class news extends \Gino\Controller {
 
@@ -79,9 +93,22 @@ class news extends \Gino\Controller {
      * @brief Numero ultime news esportate in lista newsletter
      */
     private $_newsletter_news_number;
+    
+    /**
+     * @brief Visualizza lo slideshow nella vista ultime news
+     * @var boolean
+     */
+    private $_last_slideshow_view;
+    
+    /**
+     * @brief Numero news mostrate nello slideshow
+     * @var integer
+     */
+    private $_last_slideshow_number;
 
     /**
      * @brief Tabella di opzioni 
+     * @var string
      */
     private $_tbl_opt;
 
@@ -96,33 +123,45 @@ class news extends \Gino\Controller {
         parent::__construct($mdlId);
 
         $this->_tbl_opt = 'news_opt';
-
+        
         $this->_optionsValue = array(
-            'last_news_number'=>3,
-            'list_nfp'=>5,
-            'showcase_news_number'=>5,
-            'showcase_auto_start'=>0,
-            'showcase_auto_interval'=>5000,
-            'image_width'=>600,
-            'newsletter_news_number'=>10,
+            'last_news_number' => 3,
+        	'last_slideshow_view' => false, 
+        	'last_slideshow_number' => 3,
+            'list_nfp' => 5,
+            'showcase_news_number' => 5,
+            'showcase_auto_start' => 0,
+            'showcase_auto_interval' => 5000,
+            'image_width' => 600,
+            'newsletter_news_number' => 10,
         );
 
         $this->_last_news_number = $this->setOption('last_news_number', array('value'=>$this->_optionsValue['last_news_number']));
+        $this->_last_slideshow_view = $this->setOption('last_slideshow_view', array('value'=>$this->_optionsValue['last_slideshow_view']));
+        $this->_last_slideshow_number = $this->setOption('last_slideshow_number', array('value'=>$this->_optionsValue['last_slideshow_number']));
         $this->_list_nfp = $this->setOption('list_nfp', array('value'=>$this->_optionsValue['list_nfp']));
         $this->_showcase_news_number = $this->setOption('showcase_news_number', array('value'=>$this->_optionsValue['showcase_news_number']));
         $this->_showcase_auto_start = $this->setOption('showcase_auto_start', array('value'=>$this->_optionsValue['showcase_auto_start']));
         $this->_showcase_auto_interval = $this->setOption('showcase_auto_interval', array('value'=>$this->_optionsValue['showcase_auto_interval']));
         $this->_image_width = $this->setOption('image_width', array('value'=>$this->_optionsValue['image_width']));
         $this->_newsletter_news_number = $this->setOption('newsletter_news_number', array('value'=>$this->_optionsValue['newsletter_news_number']));
-
+        
         $this->_options = new Options($this);
         $this->_optionsLabels = array(
             "last_news_number"=>array(
                 'label'=>_("Numero ultime news"),
                 'value'=>$this->_optionsValue['last_news_number'],
-                'section'=>true,
+            	'section'=>true,
                 'section_title'=>_('Ultime news')
             ),
+        	"last_slideshow_view"=>array(
+        		'label'=>array(_("Visualizza lo slideshow nella vista"), _("occorre impostare delle news da mostrare nello slideshow")),
+        		'value'=>$this->_optionsValue['last_slideshow_view']
+        	),
+        	"last_slideshow_number"=>array(
+        		'label'=>_("Numero di news nello slideshow"),
+        		'value'=>$this->_optionsValue['last_slideshow_number']
+        	),
             "list_nfp"=>array(
                 'label'=>_("Numero news per pagina"),
                 'value'=>$this->_optionsValue['list_nfp'],
@@ -141,7 +180,7 @@ class news extends \Gino\Controller {
             ),
             "showcase_auto_interval"=>array(
                 'label'=>_("Intervallo animazione automatica (ms)"),
-                'value'=>$this->_optionsValue['showcase_auto_start']
+                'value'=>$this->_optionsValue['showcase_auto_interval']
             ),
             "image_width"=>array(
                 'label'=>_("Larghezza massima immagini"),
@@ -161,7 +200,7 @@ class news extends \Gino\Controller {
     /**
      * @brief Restituisce alcune proprietà della classe utili per la generazione di nuove istanze
      *
-     * @return array associativo di proprietà utilizzate per la creazione di istanze di tipo news (tabelle, css, viste, folders)
+     * @return array associativo di proprietà utilizzate per la creazione di istanze di tipo news (tabelle, css, viste, cartelle)
      */
     public static function getClassElements() {
 
@@ -190,7 +229,6 @@ class news extends \Gino\Controller {
                 )
             )
         );
-
     }
 
     /**
@@ -239,7 +277,7 @@ class news extends \Gino\Controller {
      * Questo metodo viene letto dal motore di generazione dei layout (metodi non presenti nel file news.ini) e dal motore di generazione
      * di voci di menu (metodi presenti nel file news.ini) per presentare una lista di output associati all'istanza di classe.
      *
-     * @return array associativo NOME_METODO => array('label' => LABEL, 'permissions' => PERMESSI)
+     * @return array, METHOD_NAME => array('label' => (string) [label], 'permissions' => (array) [permissions list in the format classname.code_perm])
      */
     public static function outputFunctions() {
 
@@ -255,7 +293,7 @@ class news extends \Gino\Controller {
 
     /**
      * @brief Getter larghezza di ridimensionamenteo delle immagini 
-     * @return largheza di ridimensionamento
+     * @return larghezza di ridimensionamento
      */
     public function getImageWidth() {
         return $this->_image_width;
@@ -329,6 +367,22 @@ class news extends \Gino\Controller {
 
         return $view->render($dict);
     }
+    
+    /**
+     * News da mostrare nello slideshow
+     * @return array(news object)
+     */
+    private function slideshow() {
+    	
+    	$private = $this->userHasPerm('can_view_private') ? TRUE : FALSE;
+    	
+    	$where = "slideshow='1' AND published='1'";
+    	if(!$private) {
+    		$where .= " AND private='0'";
+    	}
+    	
+    	return Article::objects($this, array('where' => $where, 'order'=>'date DESC, insertion_date DESC', 'limit'=>array(0, $this->_last_slideshow_number)));
+    }
 
     /**
      * @brief Front end ultime news
@@ -345,6 +399,8 @@ class news extends \Gino\Controller {
         $title = $module->label.' | '.$title_site;
 
         $this->_registry->addCss($this->_class_www."/news_".$this->_instance_name.".css");
+        $this->_registry->addJs($this->_class_www."/news.js");
+        
         $this->_registry->addHeadLink(array(
             'rel' => 'alternate',
             'type' => 'application/rss+xml',
@@ -356,6 +412,23 @@ class news extends \Gino\Controller {
         if(!$private) {
             $where_arr[] = "private='0'";
         }
+        
+        $slideshow_items = array();	// default value
+        
+        if($this->_last_slideshow_view) {
+        	
+        	$slides = $this->slideshow();
+        	if(count($slides) > 1)
+        	{
+        		$ids = array();
+        		foreach ($slides AS $s) {
+        			$ids[] = $s->id;
+        		}
+        		$where_arr[] = "id NOT IN (".implode(',', $ids).")";
+        		
+        		$slideshow_items = $slides;
+        	}
+		}
 
         $news = Article::objects($this, array('where' => implode(' AND ', $where_arr), 'order'=>'date DESC, insertion_date DESC', 'limit'=>array(0, $this->_last_news_number)));
 
@@ -365,11 +438,12 @@ class news extends \Gino\Controller {
             'instance_name' => $this->_instance_name,
             'news' => $news,
             'feed_url' => $this->link($this->_instance_name, 'feedRSS'),
-            'archive_url' => $this->link($this->_instance_name, 'archive')
+            'archive_url' => $this->link($this->_instance_name, 'archive'), 
+        	'slideshow' => $this->_last_slideshow_view, 
+        	'slideshow_items' => $slideshow_items,
         );
 
-        return $view->render($dict);
-
+		return $view->render($dict);
     }
 
     /**
@@ -405,7 +479,6 @@ class news extends \Gino\Controller {
 
         $document = new \Gino\Document($view->render($dict));
         return $document();
-
     }
 
     /**
@@ -415,7 +488,7 @@ class news extends \Gino\Controller {
      */
     public function relatedContentsList($item)
     {
-        $related_contents = GTag::getRelatedContents('Article', $item->id);
+        $related_contents = GTag::getRelatedContents($this->getClassName(), 'Article', $item->id);
         if(count($related_contents)) {
             $view = new View(null, 'related_contents_list');
             return $view->render(array('related_contents' => $related_contents));
@@ -433,6 +506,7 @@ class news extends \Gino\Controller {
         $this->_registry->addCss($this->_class_www."/news_".$this->_instance_name.".css");
 
         $ctgslug = \Gino\cleanVar($request->GET, 'ctg', 'string');
+        $tag = \Gino\cleanVar($request->GET, 'tag', 'string');
 
         if($this->userHasPerm('can_view_private')) {
             $private = TRUE;
@@ -449,35 +523,29 @@ class news extends \Gino\Controller {
             $ctg = null;
             $ctg_id = 0;
         }
-
-        $news_number = Article::getCount($this, array('published' => TRUE, 'private'=>$private, 'ctg'=>$ctg_id));
+        
+        $news_number = Article::getCount($this, array('published' => TRUE, 'private' => $private, 'ctg' => $ctg_id, 'tag' => $tag));
 
         $paginator = Loader::load('Paginator', array($news_number, $this->_list_nfp));
         $limit = $paginator->limitQuery();
 
-        $where_arr = array("instance='".$this->_instance."' AND published='1'");
-        if($ctg_id) {
-            $where_arr[] = "id IN (SELECT article_id FROM ".Article::$table_ctgs." WHERE category_id='".$ctg_id."')";
-        }
-        if(!$private) {
-            $where_arr[] = "private='0'";
-        }
+        $where = Article::setConditionWhere($this, array('published' => TRUE, 'private' => $private, 'ctg' => $ctg_id, 'tag' => $tag));
 
-        $news = Article::objects($this, array('where'=>implode(' AND ', $where_arr), 'order'=>'date DESC, insertion_date DESC', 'limit'=>$limit));
-
+        $news = Article::objects($this, array('where'=>$where, 'order'=>'date DESC, insertion_date DESC', 'limit'=>$limit));
+        
         $view = new View($this->_view_dir);
         $view->setViewTpl('archive_'.$this->_instance_name);
         $dict = array(
             'instance_name' => $this->_instance_name,
             'feed_url' => $this->link($this->_instance_name, 'feedRSS'),
             'ctg' => $ctg,
+        	'tag' => $tag, 
             'news' => $news,
             'pagination' => $paginator->pagination()
         );
 
         $document = new \Gino\Document($view->render($dict));
         return $document();
-
     }
 
     /**
@@ -519,10 +587,10 @@ class news extends \Gino\Controller {
 
         // groups privileges
         if($this->userHasPerm('can_admin')) {
-            $links_array = array($link_frontend, $link_options, $link_ctg, $link_dft);
+        	$links_array = array($link_frontend, $link_options, $link_ctg, $link_dft);
         }
         else {
-            $links_array = array($link_ctg, $link_dft);
+        	$links_array = array($link_ctg, $link_dft);
         }
 
         $module = ModuleInstance::getFromName($this->_instance_name);
@@ -537,7 +605,6 @@ class news extends \Gino\Controller {
 
         $document = new \Gino\Document($view->render($dict));
         return $document();
-
     }
 
     /**
@@ -547,7 +614,7 @@ class news extends \Gino\Controller {
      */
     private function manageCategory(\Gino\Http\Request $request) {
 
-        $admin_table = new AdminTable($this, array());
+        $admin_table = \Gino\Loader::load('AdminTable', array($this, array()));
 
         $backend = $admin_table->backOffice(
             'Category',
@@ -579,7 +646,7 @@ class news extends \Gino\Controller {
      */
     private function manageNews(\Gino\Http\Request $request) {
 
-        if(!$this->userHasPerm('can_admin') and !$this->userHasPerm('can_publish')) {
+        if(!$this->userHasPerm('can_admin', 'can_publish')) {
             $remove_fields = array('published');
             $delete_deny = 'all';
         }
@@ -588,8 +655,8 @@ class news extends \Gino\Controller {
             $delete_deny = array();
         }
 
-        $admin_table = new AdminTable($this, array('delete_deny'=>$delete_deny));
-
+        $admin_table = \Gino\Loader::load('AdminTable', array($this, array('delete_deny'=>$delete_deny)));
+        
         $backend = $admin_table->backOffice(
             'Article',
             array(
@@ -625,13 +692,18 @@ class news extends \Gino\Controller {
      */
     public function searchSite() {
 
-        $private = $this->userHasPerm('can_view_private') ? TRUE : FALSE;
+        $view_private = $this->userHasPerm('can_view_private') ? TRUE : FALSE;
+        
+        $clauses = array("instance" => $this->_instance, 'published' => 1);
+        if(!$view_private) {
+        	$clauses['private'] = 0;
+        }
 
         return array(
-            "table"=>Article::$table, 
-            "selected_fields"=>array("id", "slug", "date", array("highlight"=>true, "field"=>"title"), array("highlight"=>true, "field"=>"text")), 
-            "required_clauses"=>$private ? array("instance"=>$this->_instance, 'published'=>1) : array("instance"=>$this->_instance, 'private'=>0, 'published'=>1), 
-            "weight_clauses"=>array("title"=>array("weight"=>3), "text"=>array("weight"=>1))
+            "table" => Article::$table, 
+            "selected_fields" => array("id", "slug", "date", array("highlight"=>true, "field"=>"title"), array("highlight"=>true, "field"=>"text")), 
+            "required_clauses" => $clauses, 
+            "weight_clauses" => array("title"=>array("weight"=>3), "text"=>array("weight"=>1))
         );
     }
 
@@ -657,7 +729,6 @@ class news extends \Gino\Controller {
         }
 
         return $buffer;
-
     }
 
     /**
@@ -697,7 +768,6 @@ class news extends \Gino\Controller {
         );
 
         return $view->render($dict);
-
     }
 
     /**
@@ -726,5 +796,4 @@ class news extends \Gino\Controller {
         $response->setContentType('text/xml');
         return $response;
     }
-
 }

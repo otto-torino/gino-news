@@ -1,1 +1,1 @@
-name:"news",version:"2.1.0",tbl_name:"news",instantiable:"1",description:"Gestore di news categorizzate con gruppi di lavoro",removable:"1",folders:"contents/news"
+name:"news",version:"2.1.1",tbl_name:"news",instantiable:"1",description:"Gestore di news categorizzate con gruppi di lavoro",removable:"1",folders:"contents/news"

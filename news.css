@@ -1,23 +1,23 @@
 /* last news */
-#news-last-news {
+#news-last {
 
 }
 
 /* news detail */
-#news-detail-news {
+#news-detail {
 
 }
 
 /* news archive */
-#news-archive-news {
+#news-archive {
 
 }
 
 /* news showcase */
-#news-showcase-news table {
+#news-showcase table {
     margin: auto;
 }
-#news-showcase-news table td {
+#news-showcase table td {
     padding: 5px;
 }
 #news-showcase-wrapper-news {
@@ -26,14 +26,14 @@
     position: relative;
 }
 
-#news-showcase-news .news-showcase-item {
+#news-showcase .news-showcase-item {
     background: #FFFFFF;
     height: 100%;
     padding: 10px;
     position: absolute;
     width: 755px;
 }
-#news-showcase-news .news-showcase-sym {
+#news-showcase .news-showcase-sym {
     background: none repeat scroll 0 0 #EEEEEE;
     border-radius: 50% 50% 50% 50%;
     box-shadow: 0 1px 1px #828282 inset, 0 1px 1px #FFFFFF;
@@ -42,7 +42,7 @@
     overflow: hidden;
     width: 20px;
 }
-#news-showcase-news .news-showcase-sym span {
+#news-showcase .news-showcase-sym span {
     background: none repeat scroll 0 0 #B84B56;
     border-radius: 50% 50% 50% 50%;
     box-shadow: 0 1px 2px #000000 inset, 0 1px 1px #FFFFFF;
@@ -53,16 +53,16 @@
     transition: all 100ms ease 0s;
     width: 20px;
 }
-#news-showcase-news .news-showcase-sym.on span {
+#news-showcase .news-showcase-sym.on span {
     margin: 0 !important;
 }
-#news-showcase-news .news-showcase-sym.fwd span {
+#news-showcase .news-showcase-sym.fwd span {
     margin-left: 20px;
 }
-#news-showcase-news .news-showcase-sym.rwd span {
+#news-showcase .news-showcase-sym.rwd span {
     margin-left: -20px;
 }
-#news-showcase-news .caption {
+#news-showcase .caption {
     background: none repeat scroll 0 0 #544848;
     bottom: 0;
     color: #FFFFFF;
@@ -71,16 +71,44 @@
     position: absolute;
     width: 430px;
 }
-#news-showcase-news .caption h1 {
+#news-showcase .caption h1 {
     font-size: 1em;
     font-weight: bold;
     margin: 5px 0;
 }
-#news-showcase-news .caption a:link, #news-showcase-news .caption a:visited {
+#news-showcase .caption a:link, #news-showcase .caption a:visited {
     color: #DDFD04;
 }
-#news-showcase-news .caption p {
+#news-showcase .caption p {
     font-size: 0.9em;
     line-height: 1.3em;
     margin: 5px 0;
+}
+
+/* Slideshow */
+#news-feed { 
+	height:130px;
+	width:100%;
+	overflow:hidden;
+	position:relative;
+	border:1px solid #ccc;
+	background:#eee;
+}
+#news-feed .title {
+	font-size: 1.20em;
+}
+#news-feed ul { 
+	position:absolute;
+	top:0;
+	left:0;
+	list-style-type:none;
+	padding:0;
+	margin:0;
+}
+#news-feed ul li { 
+	height:130px;
+	font-size:12px;
+	margin:0;
+	padding:10px;
+	overflow:hidden;
 }

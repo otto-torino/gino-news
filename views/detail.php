@@ -10,15 +10,15 @@
 * - **related_contents_list**: html, lista di link a risorse correlate
 * - **social**: html, bottoni per lo share sui social
 *
-* @version 2.1.0
-* @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+* @version 2.1.1
+* @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
 * @authors Marco Guidotti guidottim@gmail.com
 * @authors abidibo abidibo@gmail.com
 */
 ?>
 <? namespace Gino\App\News; ?>
 <? //@cond no-doxygen ?>
-    <section itemscope itemtype="http://www.schema.org/NewsArticle" id="news-detail-news-<?= $instance_name ?>">
+<section itemscope itemtype="http://www.schema.org/NewsArticle" id="news-detail-<?= $instance_name ?>">
     <div class="row">
         <div class="col-md-12">
             <h1 itemprop="name"><?= \Gino\htmlChars($news->ml('title')) ?></h1>

@@ -18,7 +18,7 @@
 ?>
 <? namespace Gino\App\News; ?>
 <? //@cond no-doxygen ?>
-<section id="news-showcase-news-<?= $instance_name ?>">
+<section id="news-showcase-<?= $instance_name ?>">
     <h1>
         <?= _('News') ?>
         <? if($feed_url): ?>

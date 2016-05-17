@@ -8,17 +8,46 @@
 * - **news**: array, oggetti @ref Gino.App.News.Article
 * - **feed_url**: string, url feed rss
 * - **archive_url**: string,  url archivio completo
+* - **slideshow**: bool
+* - **slideshow_items**: array, oggetti @ref Gino.App.News.Article
 *
-* @version 2.1.0
-* @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+* @version 2.1.1
+* @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
 * @authors Marco Guidotti guidottim@gmail.com
 * @authors abidibo abidibo@gmail.com
 */
 ?>
 <? namespace Gino\App\News; ?>
 <? //@cond no-doxygen ?>
-<section id="news-last-news-<?= $instance_name ?>">
+<section id="news-last-<?= $instance_name ?>">
     <h1>Ultime news <a class="fa fa-rss" href="<?= $feed_url ?>"></a></h1>
+    
+    <? if($slideshow && count($slideshow_items) > 1): ?>
+    	<div id="news-feed-<?= $instance_name ?>">
+			<ul>
+			<? foreach($slideshow_items as $slide): ?>
+				<li>
+				<? if($slide->img): ?>
+                    <? $image = new \Gino\GImage(\Gino\absolutePath($slide->getImgPath())); $thumb = $image->thumb(100, 100); ?>
+                    <img class="left" style="margin: 0 10px 10px 0" src="<?= $thumb->getPath() ?>" />
+                <? endif ?>
+                <div class="title"><a href="<?= $slide->getUrl() ?>"><?= \Gino\htmlChars($slide->ml('title')) ?></a></div>
+                <time><?= \Gino\dbDateToDate($slide->date) ?></time>
+                
+                <?= \Gino\cutHtmlText(\Gino\htmlChars($slide->ml('text')), 80, '...', false, false, true, array('endingPosition' => 'in')) ?>
+                <div class="null"></div>
+                </li>
+			<? endforeach ?>
+			</ul>
+		</div>
+		
+		<script type="text/javascript">
+        	window.addEvent('domready', function() {
+            	NewsShow('news-feed-<?= $instance_name ?>', 4000, 500);
+        	});
+   		</script>
+    <? endif ?>
+    
     <? if(count($news)): ?>
         <? foreach($news as $n): ?>
             <article>
