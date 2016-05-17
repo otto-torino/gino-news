@@ -3,8 +3,8 @@
  * @file class.Category.php
  * @brief Contiene la definizione ed implementazione della classe Gino.App.News.Category
  *
- * @version 2.1.0
- * @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @version 2.1.1
+ * @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
  */
@@ -15,36 +15,31 @@ use \Gino\ImageField;
 use \Gino\SlugField;
 
 /**
+ * \ingroup news
  * @brief Classe di tipo Gino.Model che rappresenta una categoria di news.
  *
- * @version 2.1.0
- * @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @version 2.1.1
+ * @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @authors Marco Guidotti guidottim@gmail.com
  * @authors abidibo abidibo@gmail.com
  */
 class Category extends \Gino\Model {
 
-    protected static $_extension_img = array('jpg', 'jpeg', 'png');
     public static $table = 'news_category';
+    public static $columns;
+    
+    protected static $_extension_img = array('jpg', 'jpeg', 'png');
 
     /**
      * @brief Costruttore
      *
      * @param integer $id valore ID del record
-     * @param \Gino\App\News\news $instance istanza del controller Gino.App.News.news
-     * @return istanza di Gino.App.News.Category
+     * @param object $controller
      */
-    function __construct($id, $instance) {
+    function __construct($id, $controller) {
 
-        $this->_controller = $instance;
+        $this->_controller = $controller;
         $this->_tbl_data = self::$table;
-
-        $this->_fields_label = array(
-            'name'=>_("Nome"),
-            'slug'=>array(_("Slug"), _('utilizzato per creare un permalink alla risorsa')),
-            'description'=>_('Descrizione'),
-            'image'=>array(_('Immagine'), _('Attenzione, l\'immagine inserita non viene ridimensionata'))
-        );
 
         parent::__construct($id);
 
@@ -58,35 +53,65 @@ class Category extends \Gino\Model {
     function __toString() {
         return (string) $this->name;
     }
+    
+    /**
+     * @see Gino.Model::properties()
+     */
+    protected static function properties($model, $controller) {
+    	
+    	$property['image'] = array(
+    		'path' => $controller->getBaseAbsPath() . OS . 'img'
+    	);
+    	
+    	return $property;
+    }
 
     /**
-     * @brief Sovrascrive la struttura di default
+     * Struttura dei campi della tabella di un modello
      *
-     * @see Gino.Model::structure()
-     * @param integer $id
-     * @return array, struttura
+     * @return array
      */
-    public function structure($id) {
+    public static function columns() {
 
-        $structure = parent::structure($id);
+		$columns['id'] = new \Gino\IntegerField(array(
+			'name' => 'id',
+			'primary_key' => true,
+			'auto_increment' => true,
+        	'max_lenght' => 11,
+		));
+		$columns['instance'] = new \Gino\IntegerField(array(
+			'name' => 'instance',
+			'required' => true,
+			'max_lenght' => 11,
+		));
+		$columns['name'] = new \Gino\CharField(array(
+			'name' => 'name',
+			'label' => _("Nome"),
+			'required' => true,
+			'max_lenght' => 200,
+		));
+		$columns['slug'] = new \Gino\SlugField(array(
+			'name' => 'slug',
+			'unique_key' => true,
+			'label' => array(_("Slug"), _('utilizzato per creare un permalink alla risorsa')),
+			'required' => true,
+			'max_lenght' => 200,
+			'autofill' => array('name'),
+		));
+		$columns['description'] = new \Gino\TextField(array(
+			'name' => 'description',
+			'label' => _("Descrizione"),
+		));
+		$columns['image'] = new \Gino\ImageField(array(
+			'name' => 'image',
+			'label' =>array(_('Immagine'), _('Attenzione, l\'immagine inserita non viene ridimensionata')),
+			'max_lenght' => 200,
+			'extensions' => self::$_extension_img,
+			'path' => null,
+			'resize' => false
+		));
 
-        $structure['slug'] = new SlugField(array(
-            'name' => 'slug',
-            'model' => $this,
-            'required' => TRUE,
-            'autofill' => array('name')
-        ));
-
-        $base_path = $this->_controller->getBaseAbsPath() . OS . 'img';
-        $structure['image'] = new ImageField(array(
-            'name' => 'image',
-            'model' => $this,
-            'extensions' => self::$_extension_img, 
-            'path' => $base_path,
-            'resize' => FALSE
-        ));
-
-        return $structure;
+        return $columns;
     }
 
     /**
@@ -98,5 +123,6 @@ class Category extends \Gino\Model {
     public function imagePath($controller) {
         return $controller->getBasePath().'/img/'.$this->image;
     }
-
 }
+
+Category::$columns=Category::columns();

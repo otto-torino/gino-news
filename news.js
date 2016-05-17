@@ -2,7 +2,7 @@
  * @file news.js
  * @brief Contiene javascript del modulo News per gino CMS
  * @description Richiede Mootools Core >= 1.4.0
- * @copyright 2012-2014 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
+ * @copyright 2012-2016 Otto srl MIT License http://www.opensource.org/licenses/mit-license.php
  * @author Marco Guidotti guidottim@gmail.com
  * @author abidibo abidibo@gmail.com
  */
@@ -127,3 +127,42 @@ var NewSlider = new Class({
     }
 
 });
+
+/**
+ * @fn NewsShow
+ * @brief Gestisce lo slideshow delle news
+ * 
+ * @param string vid valore id del container
+ * @param integer show_duration durata di visualizzazione dell'elemento
+ * @param integer scroll_duration durata dello scroll
+ */
+NewsShow = function(vid, show_duration, scroll_duration) {
+	/* settings */
+	var list = $(vid).getFirst('ul');
+	var items = list.getElements('li');
+	var showDuration = show_duration;
+	var scrollDuration = scroll_duration;
+	var index = 0;
+	var height = items[0].getSize().y;
+	
+	/* action func */
+	var move = function() {
+		list.set('tween',{
+			duration: scrollDuration,
+			//duration: 'long',
+			//transition: 'bounce:out',
+			onComplete: function() {
+				if(index == items.length - 1) {
+					index = 0 - 1;
+					list.scrollTo(0,0);
+				}
+			}
+		}).tween('top',0 - (++index * height));
+	};
+	
+	/* go! */
+	window.addEvent('load', function() {		
+		move.periodical(showDuration);
+	});
+};
+
